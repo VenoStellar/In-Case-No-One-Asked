@@ -23,14 +23,14 @@
 *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 html { 
   scroll-behavior:smooth; 
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: hidden; 
 }
 
 body {
   background:var(--paper); color:var(--ink);
   font-family:var(--fb); 
-  max-width:100%; /* Ensure it fits any screen */
-  width: 1000px; /* Target width for large screens */
+  max-width:100%; 
+  width: 1000px; 
   margin:0 auto; padding:0 0 60px;
   overflow-x: hidden;
 }
@@ -46,7 +46,7 @@ body::before {
   border-top:4px double var(--rule);
   border-bottom:4px double var(--rule);
   padding:18px 20px 14px;
-  margin: 0 10px; /* Add slight breathing room on small laptops */
+  margin: 0 10px;
 }
 .masthead-date {
   font-size:10px; letter-spacing:2px; text-transform:uppercase;
@@ -56,10 +56,10 @@ body::before {
 }
 .masthead-title {
   font-family:var(--fh);
-  font-size:clamp(18px, 4.5vw, 52px); /* Smoother scaling */
+  font-size:clamp(18px, 4.5vw, 52px);
   line-height:1.05; letter-spacing:-1px;
   color:var(--ink); margin-bottom:10px; 
-  white-space: normal; /* Allow wrapping on very narrow screens */
+  white-space: normal;
   overflow-wrap: break-word;
 }
 .masthead-title .r {
@@ -104,7 +104,6 @@ body::before {
   gap: 20px;
 }
 
-/* ── POSTS ── */
 .posts-col { border-right:1px solid var(--rule); padding-right:20px; min-width: 0; }
 .post { padding:20px 0; border-bottom:1px solid var(--rule); position:relative; }
 .post-cat { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:var(--red); font-family:var(--fh); margin-bottom:6px; }
@@ -117,17 +116,15 @@ body::before {
 .post-body { font-size:13px; line-height:1.85; color:var(--smudge); text-align:justify; }
 .post-img { width:100%; height: auto; margin:12px 0 4px; border:1px solid var(--rule); filter:sepia(35%) contrast(1.1) brightness(.96); display:block; }
 
-/* ── SIDEBAR ── */
 .sidebar-col { padding-left:0; position:sticky; top:0; max-height:100vh; overflow-y:auto; }
 
-/* ── MOBILE ── */
 @media(max-width:850px){
   .main-wrap { grid-template-columns: 1fr; }
   .posts-col { border-right: none; padding-right: 0; }
   .sidebar-col { position: static; max-height: none; padding-top: 30px; }
 }
 
-/* Rest of the original styles kept for visual consistency */
+/* Original styles */
 .post-byline { font-size:11px; color:var(--smudge); font-style:italic; margin-bottom:10px; letter-spacing:1px; border-bottom:1px dashed var(--rule); padding-bottom:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; }
 .post-actions { display:flex; gap:5px; align-items:center; flex-shrink:0; }
 .read-more-btn { font-family:var(--fh); font-size:9px; letter-spacing:2px; text-transform:uppercase; background:none; border:1px solid var(--rule); color:var(--ink); cursor:pointer; padding:3px 8px; transition:all .15s; white-space:nowrap; }
@@ -246,12 +243,10 @@ footer { border-top:4px double var(--rule); padding:24px 20px 20px; margin-top:2
 </div>
 
 <main class="main-wrap">
-  <!-- POSTS COLUMN -->
   <section class="posts-col" id="posts-container">
     <p style="text-align:center;padding:40px;font-family:var(--fh);color:var(--smudge)">Loading dispatches...</p>
   </section>
 
-  <!-- SIDEBAR -->
   <aside class="sidebar-col">
     <div class="sidebar-sec">
       <div class="sb-head">
@@ -271,7 +266,7 @@ footer { border-top:4px double var(--rule); padding:24px 20px 20px; margin-top:2
           <label>Your Message</label>
           <textarea id="cmsg" placeholder="Write your thoughts..."></textarea>
         </div>
-        <button class="submit-btn" onclick="addComment()">— Leave a Mark —</button>
+        <button class="submit-btn" id="btn-comment" onclick="addComment()">— Leave a Mark —</button>
       </div>
     </div>
 
@@ -362,7 +357,7 @@ footer { border-top:4px double var(--rule); padding:24px 20px 20px; margin-top:2
     <div class="modal-title">Admin Login</div>
     <div class="form-field"><label>Email</label><input type="email" id="login-email" placeholder="admin@example.com"/></div>
     <div class="form-field"><label>Password</label><input type="password" id="login-pw" placeholder="••••••••"/></div>
-    <button class="submit-btn" onclick="doLogin()">Login</button>
+    <button class="submit-btn" id="btn-login-submit" onclick="doLogin()">Login</button>
     <p class="login-error" id="login-error">Incorrect credentials.</p>
   </div>
 </div>
@@ -373,7 +368,14 @@ footer { border-top:4px double var(--rule); padding:24px 20px 20px; margin-top:2
    ───────────────────────────────────────── */
 const SUPABASE_URL = 'https://ewbuqklwkewybsqfdlew.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3YnVxa2x3a2V3eWJzcWZkbGV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NjMyNjgsImV4cCI6MjA5NTAzOTI2OH0.7qO298Y5IbrzWLddRTdQCftWnY1mABnVJZe2hlgSmEM';
-const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let supabase;
+try {
+  supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (e) {
+  console.error("Supabase failed to initialize:", e);
+  alert("Database connection failed. Please check your URL and Key.");
+}
 
 let isAdmin = false, postCount = 0, modalImgSrc = null, selectedImageFile = null, pendingDeleteId = null;
 const postStore = {}, rState = {};
@@ -381,29 +383,53 @@ const postStore = {}, rState = {};
 document.getElementById('live-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
 async function checkAdminStatus() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();
-    isAdmin = profile && profile.is_admin;
-  } else { isAdmin = false; }
-  applyRole();
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();
+      isAdmin = profile && profile.is_admin;
+    } else { isAdmin = false; }
+    applyRole();
+  } catch (e) {
+    console.error("Auth check failed:", e);
+  }
 }
 
 async function doLogin() {
   const email = document.getElementById('login-email').value, pw = document.getElementById('login-pw').value;
+  if (!email || !pw) { alert("Please enter email and password."); return; }
+  
   const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
-  if (error) { document.getElementById('login-error').textContent = error.message; document.getElementById('login-error').style.display = 'block'; }
-  else { await checkAdminStatus(); if (isAdmin) { closeModal('login-modal'); document.getElementById('login-error').style.display = 'none'; } }
+  if (error) { 
+    document.getElementById('login-error').textContent = error.message; 
+    document.getElementById('login-error').style.display = 'block'; 
+  }
+  else { 
+    await checkAdminStatus(); 
+    if (isAdmin) { 
+      closeModal('login-modal'); 
+      document.getElementById('login-error').style.display = 'none'; 
+    } else {
+      alert("You are logged in, but you don't have Admin permissions yet.");
+    }
+  }
 }
 
 async function doLogout() { await supabase.auth.signOut(); isAdmin = false; applyRole(); fetchPosts(); }
 
 function applyRole() {
-  document.getElementById('admin-badge').style.display = isAdmin ? 'inline-flex' : 'none';
-  document.getElementById('btn-new-post').style.display = isAdmin ? '' : 'none';
-  document.getElementById('btn-style').style.display = isAdmin ? '' : 'none';
-  document.getElementById('btn-logout').style.display = isAdmin ? '' : 'none';
-  document.getElementById('btn-login').style.display = isAdmin ? 'none' : '';
+  const adminBadge = document.getElementById('admin-badge');
+  const btnNewPost = document.getElementById('btn-new-post');
+  const btnStyle = document.getElementById('btn-style');
+  const btnLogout = document.getElementById('btn-logout');
+  const btnLogin = document.getElementById('btn-login');
+  
+  if(adminBadge) adminBadge.style.display = isAdmin ? 'inline-flex' : 'none';
+  if(btnNewPost) btnNewPost.style.display = isAdmin ? '' : 'none';
+  if(btnStyle) btnStyle.style.display = isAdmin ? '' : 'none';
+  if(btnLogout) btnLogout.style.display = isAdmin ? '' : 'none';
+  if(btnLogin) btnLogin.style.display = isAdmin ? 'none' : '';
+  
   document.querySelectorAll('article.post').forEach(a => refreshActions(a.id, true));
 }
 
@@ -418,10 +444,18 @@ function refreshActions(pid, expanded) {
 }
 
 async function fetchPosts() {
-  const { data, error } = await supabase.from('posts').select('*').eq('is_published', true).order('created_at', { ascending: false });
-  if (error) return;
-  const container = document.getElementById('posts-container'); container.innerHTML = '';
-  data.forEach(renderPost);
+  try {
+    const { data, error } = await supabase.from('posts').select('*').eq('is_published', true).order('created_at', { ascending: false });
+    if (error) throw error;
+    const container = document.getElementById('posts-container'); 
+    if(container) {
+      container.innerHTML = '';
+      if (data.length === 0) container.innerHTML = '<p style="text-align:center;padding:40px;font-family:var(--fh);color:var(--smudge)">No stories published yet.</p>';
+      data.forEach(renderPost);
+    }
+  } catch (e) {
+    console.error("Fetch posts failed:", e);
+  }
 }
 
 function renderPost(post) {
@@ -436,12 +470,14 @@ function renderPost(post) {
     ${post.tag ? `<div class="post-tags"><span class="torn-tag">${sx(post.tag)}</span></div>` : ''}
     <div class="reactions" data-post="${pid}"></div>
   `;
-  document.getElementById('posts-container').appendChild(article);
+  const container = document.getElementById('posts-container');
+  if(container) container.appendChild(article);
   postStore[pid] = { cat: post.category, headline: post.title, byline: post.byline, bodyHTML: post.body_html, tag: post.tag, imgSrc: post.image_url };
   refreshActions(pid, true); buildReactions(article.querySelector('.reactions'));
 }
 
 async function buildReactions(wrap) {
+  if(!wrap) return;
   const pid = wrap.dataset.post;
   let current = rState[pid];
   if (!current) {
@@ -467,24 +503,44 @@ async function updateReaction(pid, col, btn) {
 }
 
 async function fetchComments() {
-  const { data } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
-  const container = document.getElementById('comments-container'); container.innerHTML = '';
-  if (!data || data.length === 0) { container.innerHTML = '<p style="font-size:11px;color:var(--smudge);font-style:italic;text-align:center">The silence is deafening. Say something.</p>'; }
-  else {
-    data.forEach(c => {
-      const div = document.createElement('div'); div.className='comment';
-      div.innerHTML=`<div class="cmeta"><span>${sx(c.author_name)}</span><span style="opacity:.6">${new Date(c.created_at).toLocaleDateString()}</span></div><div class="ctext">${sx(c.content)}</div>`;
-      container.appendChild(div);
-    });
+  try {
+    const { data } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
+    const container = document.getElementById('comments-container'); 
+    if(!container) return;
+    container.innerHTML = '';
+    if (!data || data.length === 0) { 
+      container.innerHTML = '<p style="font-size:11px;color:var(--smudge);font-style:italic;text-align:center">The silence is deafening. Say something.</p>'; 
+    }
+    else {
+      data.forEach(c => {
+        const div = document.createElement('div'); div.className='comment';
+        div.innerHTML=`<div class="cmeta"><span>${sx(c.author_name)}</span><span style="opacity:.6">${new Date(c.created_at).toLocaleDateString()}</span></div><div class="ctext">${sx(c.content)}</div>`;
+        container.appendChild(div);
+      });
+    }
+    const ccount = document.getElementById('ccount');
+    if(ccount) ccount.textContent = data ? data.length : 0;
+  } catch (e) {
+    console.error("Fetch comments failed:", e);
   }
-  document.getElementById('ccount').textContent = data ? data.length : 0;
 }
 
 async function addComment() {
-  const name = document.getElementById('cname').value.trim(), msg = document.getElementById('cmsg').value.trim();
-  if (!name || !msg) return;
-  const { error } = await supabase.from('comments').insert([{ author_name: name, content: msg }]);
-  if (!error) { document.getElementById('cname').value = ''; document.getElementById('cmsg').value = ''; fetchComments(); }
+  const nameInput = document.getElementById('cname');
+  const msgInput = document.getElementById('cmsg');
+  const name = nameInput.value.trim(), msg = msgInput.value.trim();
+  if (!name || !msg) { alert("Please enter both name and message."); return; }
+  
+  try {
+    const { error } = await supabase.from('comments').insert([{ author_name: name, content: msg }]);
+    if (error) throw error;
+    nameInput.value = '';
+    msgInput.value = '';
+    fetchComments();
+  } catch (e) {
+    console.error("Add comment failed:", e);
+    alert("Failed to send comment. Make sure you ran the SQL policies!");
+  }
 }
 
 async function uploadImage(file) {
@@ -499,51 +555,91 @@ function prevImg(e) {
   const file = e.target.files[0]; if (!file) return;
   selectedImageFile = file;
   const reader = new FileReader();
-  reader.onload = (ev) => { document.getElementById('img-prev').innerHTML = `<img src="${ev.target.result}" style="width:100%;max-height:130px;object-fit:cover;border:1px solid var(--rule)"/>`; };
+  reader.onload = (ev) => { 
+    const prev = document.getElementById('img-prev');
+    if(prev) prev.innerHTML = `<img src="${ev.target.result}" style="width:100%;max-height:130px;object-fit:cover;border:1px solid var(--rule)"/>`; 
+  };
   reader.readAsDataURL(file);
 }
 
 async function savePost() {
   if (!isAdmin) return;
   const eid = document.getElementById('edit-id').value, title = document.getElementById('p-title').value.trim(), body = document.getElementById('rte').innerHTML.trim();
-  if (!title || !body) return;
+  if (!title || !body) { alert("Title and Body are required."); return; }
+  
   let imgUrl = modalImgSrc; if (selectedImageFile) imgUrl = await uploadImage(selectedImageFile);
   const data = { title, category: document.getElementById('p-cat').value || 'Dispatch', byline: document.getElementById('p-byline').value || 'The Editors', body_html: body, tag: document.getElementById('p-tag').value, image_url: imgUrl };
+  
   const { error } = eid ? await supabase.from('posts').update(data).eq('id', eid) : await supabase.from('posts').insert([data]);
   if (!error) { closeModal('post-modal'); fetchPosts(); }
+  else { alert("Error saving post: " + error.message); }
 }
 
 function confirmDelete(pid) { pendingDeleteId = pid; openModal('del-modal'); }
 async function doDelete() { if (!isAdmin) return; await supabase.from('posts').delete().eq('id', pendingDeleteId); closeModal('del-modal'); fetchPosts(); }
 
 function openNewPost() {
-  document.getElementById('edit-id').value = ''; ['p-title','p-cat','p-byline','p-tag'].forEach(i => document.getElementById(i).value = '');
-  document.getElementById('rte').innerHTML = ''; document.getElementById('img-prev').innerHTML = ''; selectedImageFile = null; openModal('post-modal');
+  document.getElementById('edit-id').value = ''; 
+  ['p-title','p-cat','p-byline','p-tag'].forEach(i => {
+    const el = document.getElementById(i);
+    if(el) el.value = '';
+  });
+  const rte = document.getElementById('rte');
+  const prev = document.getElementById('img-prev');
+  if(rte) rte.innerHTML = ''; 
+  if(prev) prev.innerHTML = ''; 
+  selectedImageFile = null; openModal('post-modal');
 }
 
 function openEditPost(pid) {
-  const d = postStore[pid]; document.getElementById('edit-id').value = pid; document.getElementById('p-title').value = d.headline;
-  document.getElementById('p-cat').value = d.cat; document.getElementById('p-byline').value = d.byline; document.getElementById('p-tag').value = d.tag;
-  document.getElementById('rte').innerHTML = d.bodyHTML; modalImgSrc = d.imgSrc;
-  document.getElementById('img-prev').innerHTML = d.imgSrc ? `<img src="${d.imgSrc}" style="width:100%;max-height:130px;object-fit:cover;border:1px solid var(--rule)"/>` : '';
+  const d = postStore[pid]; 
+  document.getElementById('edit-id').value = pid; 
+  document.getElementById('p-title').value = d.headline;
+  document.getElementById('p-cat').value = d.cat; 
+  document.getElementById('p-byline').value = d.byline; 
+  document.getElementById('p-tag').value = d.tag;
+  document.getElementById('rte').innerHTML = d.bodyHTML; 
+  modalImgSrc = d.imgSrc;
+  const prev = document.getElementById('img-prev');
+  if(prev) prev.innerHTML = d.imgSrc ? `<img src="${d.imgSrc}" style="width:100%;max-height:130px;object-fit:cover;border:1px solid var(--rule)"/>` : '';
   openModal('post-modal');
 }
 
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function toggleCustomize() { document.getElementById('customize-panel').classList.toggle('open'); }
+function openModal(id) { 
+  const el = document.getElementById(id);
+  if(el) el.classList.add('open'); 
+}
+function closeModal(id) { 
+  const el = document.getElementById(id);
+  if(el) el.classList.remove('open'); 
+}
+function toggleCustomize() { 
+  const el = document.getElementById('customize-panel');
+  if(el) el.classList.toggle('open'); 
+}
 function setVar(n,v) { document.documentElement.style.setProperty(n,v); }
-function cmd(c,v) { document.getElementById('rte').focus(); document.execCommand(c,false,v||null); }
+function cmd(c,v) { 
+  const rte = document.getElementById('rte');
+  if(rte) {
+    rte.focus(); 
+    document.execCommand(c,false,v||null); 
+  }
+}
 function sx(t) { const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
 
 function wrapSz(cls) {
-  const ed=document.getElementById('rte'); ed.focus();
+  const ed=document.getElementById('rte'); if(!ed) return;
+  ed.focus();
   const sel=window.getSelection(); if (!sel.rangeCount||sel.isCollapsed) return;
   const range=sel.getRangeAt(0), span=document.createElement('span'); span.className=cls;
   try { range.surroundContents(span); } catch(_) { document.execCommand('insertHTML',false,`<span class="${cls}">${range.toString()}</span>`); }
 }
 
-document.addEventListener('DOMContentLoaded', () => { checkAdminStatus(); fetchPosts(); fetchComments(); });
+document.addEventListener('DOMContentLoaded', () => { 
+  checkAdminStatus(); 
+  fetchPosts(); 
+  fetchComments(); 
+});
 supabase.auth.onAuthStateChange(() => checkAdminStatus());
 </script>
 </body>
