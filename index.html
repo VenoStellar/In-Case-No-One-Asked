@@ -3,832 +3,548 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>In Case No One Asked</title>
+<title>In Case No One Asked - Supabase Edition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=VT323&family=UnifrakturMaguntia&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root {
-    --paper:        #f2ead8;
-    --ink:          #1a1008;
-    --red:          #8b1a1a;
-    --smudge:       #3d2b1a;
-    --rule:         #8b7355;
-    --bar-bg:       #ebe3cc;
-    --font-heading: 'Special Elite', cursive;
-    --font-body:    'Libre Baskerville', serif;
-    --font-mono:    'VT323', monospace;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: var(--paper); color: var(--ink);
-    font-family: var(--font-body); max-width: 980px;
-    margin: 0 auto; padding: 0 0 48px; position: relative;
-  }
-  body::before {
-    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
-    opacity: 0.55;
-  }
+:root {
+  --paper:  #f2ead8;
+  --ink:    #1a1008;
+  --red:    #8b1a1a;
+  --smudge: #3d2b1a;
+  --rule:   #8b7355;
+  --bar-bg: #ebe3cc;
+  --fh: 'Special Elite', cursive;
+  --fb: 'Libre Baskerville', serif;
+  --fm: 'VT323', monospace;
+}
 
-  /* Masthead */
-  .masthead { text-align: center; border-bottom: 4px double var(--rule); border-top: 4px double var(--rule); padding: 18px 20px 14px; }
-  .masthead-meta {
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 4px; font-size: 10px; letter-spacing: 2px;
-    text-transform: uppercase; color: var(--smudge); font-family: var(--font-heading);
-    padding-bottom: 10px; border-bottom: 1px solid var(--rule); margin-bottom: 12px;
-  }
-  .masthead-title {
-    font-family: var(--font-heading); font-size: clamp(14px, 4.8vw, 52px);
-    line-height: 1.05; letter-spacing: -1px; color: var(--ink); margin-bottom: 10px; white-space: nowrap;
-  }
-  .masthead-title .r { display: inline-block; transform: rotate(var(--rot,0deg)); color: var(--col,var(--ink)); background: var(--bg,transparent); padding: 0 1px; }
-  .masthead-tagline {
-    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
-    color: var(--smudge); font-family: var(--font-body); font-style: italic;
-    border-top: 1px solid var(--rule); padding-top: 10px; margin-top: 4px;
-  }
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html { 
+  scroll-behavior:smooth; 
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
 
-  /* Admin bar */
-  .admin-bar {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-    padding: 8px 20px; border-bottom: 2px solid var(--rule);
-    background: var(--bar-bg); font-family: var(--font-heading); font-size: 11px; color: var(--smudge);
-  }
-  .admin-bar .brand { letter-spacing: 2px; text-transform: uppercase; font-size: 10px; }
-  .admin-btn {
-    background: var(--ink); color: var(--paper); border: none; font-family: var(--font-heading);
-    font-size: 10px; padding: 5px 12px; letter-spacing: 2px; cursor: pointer;
-    text-transform: uppercase; transform: rotate(-0.4deg); transition: background 0.15s; white-space: nowrap;
-  }
-  .admin-btn:hover, .admin-btn:focus { background: var(--red); outline: none; }
-  .admin-btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
-  .admin-btn.ghost:hover { background: var(--ink); color: var(--paper); }
-  .admin-btn.danger { background: var(--red); color: var(--paper); border: none; }
-  .admin-btn.danger:hover { background: #5a0d0d; }
-  .post-count-label { margin-left: auto; font-size: 9px; letter-spacing: 1px; opacity: 0.65; }
-  .admin-status {
-    font-size: 9px; letter-spacing: 1px; padding: 3px 8px;
-    border: 1px dashed var(--rule); color: var(--smudge);
-    font-family: var(--font-heading); text-transform: uppercase;
-  }
-  .admin-status.logged-in { border-color: var(--red); color: var(--red); }
+body {
+  background:var(--paper); color:var(--ink);
+  font-family:var(--fb); 
+  max-width:100%; /* Ensure it fits any screen */
+  width: 1000px; /* Target width for large screens */
+  margin:0 auto; padding:0 0 60px;
+  overflow-x: hidden;
+}
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:9999;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  opacity:.55;
+}
 
-  /* Setup banner */
-  #setup-banner {
-    display: none; background: #fff8e6; border-left: 4px solid var(--red);
-    padding: 12px 20px; font-family: var(--font-heading); font-size: 11px;
-    letter-spacing: 1px; color: #5a3e00; line-height: 1.8;
-  }
-  #setup-banner.visible { display: block; }
-  #setup-banner code { background: rgba(0,0,0,0.07); padding: 1px 5px; font-family: var(--font-mono); font-size: 13px; }
+/* ── MASTHEAD ── */
+.masthead {
+  text-align:center;
+  border-top:4px double var(--rule);
+  border-bottom:4px double var(--rule);
+  padding:18px 20px 14px;
+  margin: 0 10px; /* Add slight breathing room on small laptops */
+}
+.masthead-date {
+  font-size:10px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--smudge); font-family:var(--fh);
+  padding-bottom:10px; border-bottom:1px solid var(--rule); margin-bottom:12px;
+  text-align:center;
+}
+.masthead-title {
+  font-family:var(--fh);
+  font-size:clamp(18px, 4.5vw, 52px); /* Smoother scaling */
+  line-height:1.05; letter-spacing:-1px;
+  color:var(--ink); margin-bottom:10px; 
+  white-space: normal; /* Allow wrapping on very narrow screens */
+  overflow-wrap: break-word;
+}
+.masthead-title .r {
+  display:inline-block; transform:rotate(var(--rot,0deg));
+  color:var(--col,var(--ink)); background:var(--bg,transparent); padding:0 1px;
+}
+.masthead-tagline {
+  font-size:11px; letter-spacing:3px; text-transform:uppercase;
+  color:var(--smudge); font-family:var(--fb); font-style:italic;
+  border-top:1px solid var(--rule); padding-top:10px; margin-top:4px;
+}
 
-  /* Customize panel */
-  .customize-panel {
-    display: none; background: var(--bar-bg); border-bottom: 2px solid var(--rule);
-    padding: 14px 20px; gap: 12px; flex-wrap: wrap;
-  }
-  .customize-panel.open { display: flex; }
-  .customize-group { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
-  .customize-group label { font-family: var(--font-heading); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--smudge); }
-  .customize-group input[type="color"] { width: 100%; height: 30px; border: 1px solid var(--rule); cursor: pointer; background: none; padding: 2px; }
-  .customize-group select { width: 100%; background: var(--paper); border: 1px solid var(--rule); font-family: var(--font-heading); font-size: 11px; padding: 5px; color: var(--ink); }
+/* ── TOP BAR ── */
+.top-bar {
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:8px 20px; border-bottom:2px solid var(--rule);
+  background:var(--bar-bg); font-family:var(--fh); font-size:11px; color:var(--smudge);
+  min-height:42px;
+}
+.btn {
+  border:none; font-family:var(--fh); cursor:pointer;
+  letter-spacing:2px; text-transform:uppercase; white-space:nowrap;
+  transition:background .15s, color .15s;
+}
+.btn-solid { background:var(--ink); color:var(--paper); font-size:10px; padding:5px 12px; transform:rotate(-.4deg); }
+.btn-solid:hover { background:var(--red); }
+.btn-ghost { background:transparent; color:var(--ink); border:1px solid var(--ink); font-size:10px; padding:5px 11px; }
+.btn-ghost:hover { background:var(--ink); color:var(--paper); }
+.btn-danger { background:transparent; color:var(--red); border:1px solid var(--red); font-size:9px; padding:3px 8px; letter-spacing:1px; }
+.btn-danger:hover { background:var(--red); color:var(--paper); }
+.btn-edit { background:transparent; color:var(--smudge); border:1px solid var(--rule); font-size:9px; padding:3px 8px; letter-spacing:1px; }
+.btn-edit:hover { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+.btn-sm { font-size:9px; padding:3px 8px; letter-spacing:1px; }
+.ml-auto { margin-left:auto; }
 
-  /* Layout */
-  .main-wrap { display: grid; grid-template-columns: 1fr 300px; gap: 0; padding: 0 20px; align-items: start; }
-  .posts-col { border-right: 1px solid var(--rule); padding-right: 24px; }
-  .sidebar-col { padding-left: 20px; position: sticky; top: 0; max-height: 100vh; overflow-y: auto; }
+/* ── LAYOUT ── */
+.main-wrap { 
+  display:grid; 
+  grid-template-columns: 1fr 300px; 
+  padding:0 20px; 
+  align-items:start; 
+  gap: 20px;
+}
 
-  /* Reader Mail – mobile only, hidden on desktop */
-  .reader-mail-section { display: none; padding: 24px 20px; border-top: 4px double var(--rule); }
-  .reader-mail-inner { max-width: 640px; margin: 0 auto; }
+/* ── POSTS ── */
+.posts-col { border-right:1px solid var(--rule); padding-right:20px; min-width: 0; }
+.post { padding:20px 0; border-bottom:1px solid var(--rule); position:relative; }
+.post-cat { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:var(--red); font-family:var(--fh); margin-bottom:6px; }
+.post-headline { 
+  font-family:var(--fh); 
+  font-size:clamp(17px,3.5vw,28px); 
+  line-height:1.15; margin-bottom:8px; color:var(--ink); 
+  overflow-wrap: break-word;
+}
+.post-body { font-size:13px; line-height:1.85; color:var(--smudge); text-align:justify; }
+.post-img { width:100%; height: auto; margin:12px 0 4px; border:1px solid var(--rule); filter:sepia(35%) contrast(1.1) brightness(.96); display:block; }
 
-  /* Posts */
-  .post { padding: 20px 0; border-bottom: 1px solid var(--rule); position: relative; }
-  .post-category { font-size: 9px; letter-spacing: 4px; text-transform: uppercase; color: var(--red); font-family: var(--font-heading); margin-bottom: 6px; }
-  .post-headline { font-family: var(--font-heading); font-size: clamp(17px,3.5vw,28px); line-height: 1.15; margin-bottom: 8px; color: var(--ink); }
-  .post-byline {
-    font-size: 11px; color: var(--smudge); font-style: italic; margin-bottom: 10px; letter-spacing: 1px;
-    border-bottom: 1px dashed var(--rule); padding-bottom: 8px;
-    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
-  }
-  .read-more-btn {
-    font-family: var(--font-heading); font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
-    background: none; border: 1px solid var(--rule); color: var(--ink); cursor: pointer;
-    padding: 3px 8px; transition: all 0.15s; white-space: nowrap;
-  }
-  .read-more-btn:hover { background: var(--ink); color: var(--paper); }
-  .post-body { font-size: 13px; line-height: 1.85; color: var(--smudge); text-align: justify; }
-  .post-body::first-letter {
-    font-family: var(--font-heading); font-size: 3em; font-weight: bold; float: left;
-    line-height: 0.8; margin-right: 5px; margin-top: 5px; color: var(--red);
-  }
-  .post-image { width: 100%; margin: 12px 0 4px; border: 1px solid var(--rule); filter: sepia(35%) contrast(1.1) brightness(0.96); display: block; }
-  .post-image-caption { font-size: 10px; font-style: italic; color: var(--smudge); text-align: center; margin-bottom: 10px; letter-spacing: 1px; }
-  .post-tags { margin-top: 10px; }
-  .torn-tag {
-    display: inline-block; background: var(--red); color: var(--paper);
-    font-family: var(--font-heading); font-size: 9px; padding: 2px 8px;
-    letter-spacing: 2px; text-transform: uppercase; transform: rotate(var(--rot,-1deg)); margin-right: 6px;
-  }
-  .stamp {
-    position: absolute; right: 0; top: 18px; border: 2px solid var(--red); color: var(--red);
-    font-family: var(--font-mono); font-size: 11px; padding: 3px 7px; letter-spacing: 2px;
-    transform: rotate(var(--rot,8deg)); opacity: 0.6; pointer-events: none;
-  }
-  .delete-post-btn {
-    display: none; position: absolute; bottom: 14px; right: 0;
-    background: none; border: 1px dashed var(--red); color: var(--red);
-    font-family: var(--font-heading); font-size: 9px; padding: 2px 8px;
-    letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.15s;
-  }
-  .delete-post-btn:hover { background: var(--red); color: var(--paper); }
-  body.is-admin .delete-post-btn { display: inline-block; }
+/* ── SIDEBAR ── */
+.sidebar-col { padding-left:0; position:sticky; top:0; max-height:100vh; overflow-y:auto; }
 
-  /* Reactions */
-  .reactions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--rule); align-items: center; }
-  .reactions-label { font-family: var(--font-heading); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--smudge); margin-right: 2px; }
-  .reaction-btn {
-    background: var(--bar-bg); border: 1px solid var(--rule); font-family: var(--font-heading);
-    font-size: 11px; cursor: pointer; padding: 4px 10px; color: var(--smudge); letter-spacing: 1px;
-    transition: all 0.15s; transform: rotate(var(--rot,0deg)); display: flex; align-items: center; gap: 5px; line-height: 1;
-  }
-  .reaction-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .reaction-btn.reacted { background: var(--red); color: var(--paper); border-color: var(--red); transform: rotate(var(--rot,0deg)) scale(1.05); }
-  .reaction-btn .emoji { font-size: 14px; }
-  .reaction-btn .rcount { font-size: 10px; opacity: 0.85; }
+/* ── MOBILE ── */
+@media(max-width:850px){
+  .main-wrap { grid-template-columns: 1fr; }
+  .posts-col { border-right: none; padding-right: 0; }
+  .sidebar-col { position: static; max-height: none; padding-top: 30px; }
+}
 
-  /* Sidebar */
-  .sidebar-section { padding: 18px 0; border-bottom: 1px solid var(--rule); }
-  .sidebar-header {
-    font-family: var(--font-heading); font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
-    border-bottom: 1px solid var(--rule); padding-bottom: 6px; margin-bottom: 12px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .comment-count { background: var(--red); color: var(--paper); font-size: 9px; padding: 1px 6px; font-family: var(--font-heading); letter-spacing: 1px; }
-  .comment { background: #ebe3cc; border: 1px solid #c4a87a; padding: 10px 12px; margin-bottom: 8px; transform: rotate(var(--rot,0deg)); }
-  .comment-meta { font-family: var(--font-heading); font-size: 10px; color: var(--red); margin-bottom: 4px; letter-spacing: 1px; display: flex; justify-content: space-between; }
-  .comment-text { font-size: 12px; line-height: 1.6; color: var(--smudge); }
-  .comment-form-title { font-family: var(--font-heading); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; border-bottom: 1px dashed var(--rule); padding-bottom: 4px; margin: 14px 0 10px; }
-
-  /* Forms */
-  .form-field { margin-bottom: 8px; }
-  .form-field label { display: block; font-family: var(--font-heading); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--smudge); margin-bottom: 3px; }
-  .form-field input, .form-field textarea, .form-field select {
-    width: 100%; background: rgba(255,255,255,0.5); border: 1px solid var(--rule);
-    font-family: var(--font-heading); font-size: 12px; padding: 6px 8px; color: var(--ink);
-    outline: none; transition: border-color 0.15s; -webkit-appearance: none;
-  }
-  .form-field input:focus, .form-field textarea:focus { border-color: var(--ink); background: rgba(255,255,255,0.85); }
-  .form-field textarea { height: 70px; resize: vertical; }
-  .submit-btn {
-    width: 100%; background: var(--ink); color: var(--paper); border: none;
-    font-family: var(--font-heading); font-size: 11px; padding: 9px; cursor: pointer;
-    letter-spacing: 3px; text-transform: uppercase; transform: rotate(-0.3deg); transition: background 0.15s;
-  }
-  .submit-btn:hover { background: var(--red); }
-
-  /* Rich text editor */
-  .editor-toolbar { display: flex; gap: 4px; margin-bottom: 4px; flex-wrap: wrap; }
-  .editor-toolbar button {
-    background: var(--bar-bg); border: 1px solid var(--rule); font-family: var(--font-body);
-    font-size: 12px; padding: 3px 8px; cursor: pointer; color: var(--ink); transition: all 0.12s; line-height: 1.4;
-  }
-  .editor-toolbar button:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .editor-toolbar .sep { width: 1px; background: var(--rule); margin: 2px; }
-  .rich-editor {
-    width: 100%; min-height: 130px; background: rgba(255,255,255,0.5); border: 1px solid var(--rule);
-    font-family: var(--font-body); font-size: 13px; padding: 8px; color: var(--ink);
-    outline: none; line-height: 1.75; transition: border-color 0.15s; overflow-y: auto;
-  }
-  .rich-editor:focus { border-color: var(--ink); background: rgba(255,255,255,0.85); }
-  .rich-editor:empty::before { content: attr(data-placeholder); color: var(--rule); pointer-events: none; }
-
-  /* Counter / Footer */
-  .counter-bar { text-align: center; font-family: var(--font-mono); font-size: 14px; color: var(--smudge); letter-spacing: 3px; border-top: 1px solid var(--rule); padding: 8px 20px; margin-top: 8px; }
-  .footer { text-align: center; border-top: 4px double var(--rule); padding: 16px 20px; font-family: var(--font-heading); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--smudge); margin-top: 20px; line-height: 1.8; }
-
-  /* Modal */
-  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 10000; background: rgba(26,16,8,0.82); align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--paper); border: 2px solid var(--ink); max-width: 580px; width: 100%; padding: 28px 24px; position: relative; max-height: 90vh; overflow-y: auto; }
-  .modal-title { font-family: var(--font-heading); font-size: 20px; letter-spacing: 2px; border-bottom: 2px solid var(--rule); padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
-  .modal-close { position: absolute; top: 10px; right: 14px; background: none; border: none; cursor: pointer; font-family: var(--font-heading); font-size: 16px; color: var(--ink); padding: 4px; line-height: 1; }
-  .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .modal-actions .submit-btn { flex: 1; min-width: 140px; }
-  .login-hint { font-size: 10px; color: var(--smudge); font-style: italic; font-family: var(--font-heading); letter-spacing: 1px; text-align: center; margin-bottom: 16px; opacity: 0.7; }
-  .login-error { display: none; color: var(--red); font-family: var(--font-heading); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; text-align: center; margin-top: 8px; }
-  .login-error.visible { display: block; }
-
-  /* Status toast */
-  #status-bar { display: none; position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--paper); font-family: var(--font-heading); font-size: 11px; letter-spacing: 2px; padding: 8px 20px; z-index: 99999; white-space: nowrap; border: 1px solid var(--rule); }
-
-  /* Mobile */
-  @media (max-width: 680px) {
-    .masthead { padding: 14px 14px 10px; }
-    .masthead-meta { font-size: 9px; }
-    .masthead-meta .hide-mobile { display: none; }
-    .masthead-title { font-size: clamp(12px,4.5vw,32px); letter-spacing: -0.5px; white-space: nowrap; }
-    .masthead-tagline { font-size: 9px; letter-spacing: 2px; }
-    .admin-bar { padding: 7px 14px; gap: 6px; }
-    .post-count-label { display: none; }
-    .main-wrap { grid-template-columns: 1fr; padding: 0 14px; }
-    .posts-col { border-right: none; padding-right: 0; }
-    /* hide desktop sidebar, show mobile reader mail section */
-    .sidebar-col { display: none; }
-    .reader-mail-section { display: block; padding: 20px 14px; }
-    .post { padding: 16px 0; }
-    .stamp { right: 0; top: 14px; font-size: 10px; }
-    .reactions { gap: 5px; }
-    .reaction-btn { font-size: 10px; padding: 4px 8px; }
-    .modal { padding: 20px 16px; }
-    .customize-panel { padding: 12px 14px; }
-    .customize-group { min-width: 110px; }
-    .counter-bar { font-size: 12px; letter-spacing: 2px; }
-  }
-  @media (max-width: 400px) {
-    .masthead-title { font-size: 18px; }
-    .admin-btn { font-size: 9px; padding: 4px 8px; }
-  }
+/* Rest of the original styles kept for visual consistency */
+.post-byline { font-size:11px; color:var(--smudge); font-style:italic; margin-bottom:10px; letter-spacing:1px; border-bottom:1px dashed var(--rule); padding-bottom:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; }
+.post-actions { display:flex; gap:5px; align-items:center; flex-shrink:0; }
+.read-more-btn { font-family:var(--fh); font-size:9px; letter-spacing:2px; text-transform:uppercase; background:none; border:1px solid var(--rule); color:var(--ink); cursor:pointer; padding:3px 8px; transition:all .15s; white-space:nowrap; }
+.read-more-btn:hover { background:var(--ink); color:var(--paper); }
+.post-body::first-letter { font-family:var(--fh); font-size:3em; font-weight:bold; float:left; line-height:.8; margin-right:5px; margin-top:5px; color:var(--red); }
+.post-body b, .post-body strong { font-weight:700; color:var(--ink); }
+.post-body i, .post-body em { font-style:italic; }
+.post-body h3 { font-family:var(--fh); font-size:1.1em; margin:10px 0 4px; color:var(--ink); }
+.post-body blockquote { border-left:3px solid var(--red); margin:10px 0; padding:4px 12px; font-style:italic; color:var(--smudge); background:rgba(139,115,85,.07); }
+.post-img-cap { font-size:10px; font-style:italic; color:var(--smudge); text-align:center; margin-bottom:10px; letter-spacing:1px; }
+.post-tags { margin-top:10px; }
+.torn-tag { display:inline-block; background:var(--red); color:var(--paper); font-family:var(--fh); font-size:9px; padding:2px 8px; letter-spacing:2px; text-transform:uppercase; transform:rotate(var(--rot,-1deg)); margin-right:6px; }
+.stamp { position:absolute; right:0; top:18px; border:2px solid var(--red); color:var(--red); font-family:var(--fm); font-size:11px; padding:3px 7px; letter-spacing:2px; transform:rotate(var(--rot,8deg)); opacity:.6; pointer-events:none; }
+.reactions { display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; padding-top:10px; border-top:1px dashed var(--rule); align-items:center; }
+.reactions-label { font-family:var(--fh); font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--smudge); margin-right:2px; }
+.r-btn { background:var(--bar-bg); border:1px solid var(--rule); font-family:var(--fh); font-size:11px; cursor:pointer; padding:4px 10px; color:var(--smudge); transition:all .15s; display:flex; align-items:center; gap:5px; line-height:1; }
+.r-btn:hover { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+.r-btn.on { background:var(--red); color:var(--paper); border-color:var(--red); transform:scale(1.05); }
+.r-btn .em { font-size:14px; }
+.r-btn .rc { font-size:10px; opacity:.85; }
+.sidebar-sec { padding:18px 0; border-bottom:1px solid var(--rule); }
+.sb-head { font-family:var(--fh); font-size:12px; letter-spacing:3px; text-transform:uppercase; border-bottom:1px solid var(--rule); padding-bottom:6px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+.ccount-badge { background:var(--red); color:var(--paper); font-size:9px; padding:1px 6px; font-family:var(--fh); }
+.comment { background:#ebe3cc; border:1px solid #c4a87a; padding:10px 12px; margin-bottom:8px; transform:rotate(var(--rot,0deg)); }
+.cmeta { font-family:var(--fh); font-size:10px; color:var(--red); margin-bottom:4px; display:flex; justify-content:space-between; }
+.ctext { font-size:12px; line-height:1.6; color:var(--smudge); }
+.form-field { margin-bottom:9px; }
+.form-field label { display:block; font-family:var(--fh); font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--smudge); margin-bottom:3px; }
+.form-field input, .form-field textarea, .form-field select { width:100%; background:rgba(255,255,255,.5); border:1px solid var(--rule); font-family:var(--fh); font-size:12px; padding:6px 8px; color:var(--ink); outline:none; transition:border-color .15s; -webkit-appearance:none; }
+.form-field input:focus, .form-field textarea:focus { border-color:var(--ink); background:rgba(255,255,255,.85); }
+.form-field textarea { height:70px; resize:vertical; }
+.submit-btn { width:100%; background:var(--ink); color:var(--paper); border:none; font-family:var(--fh); font-size:11px; padding:9px; cursor:pointer; letter-spacing:3px; text-transform:uppercase; transform:rotate(-.3deg); transition:background .15s; }
+.submit-btn:hover { background:var(--red); }
+.rte-wrap { border:1px solid var(--rule); }
+.rte-toolbar { display:flex; gap:3px; flex-wrap:wrap; padding:5px 6px; border-bottom:1px solid var(--rule); background:var(--bar-bg); }
+.tb { background:transparent; border:1px solid var(--rule); font-family:var(--fh); font-size:11px; padding:3px 7px; cursor:pointer; color:var(--ink); transition:all .12s; line-height:1.2; white-space:nowrap; }
+.tb:hover { background:var(--ink); color:var(--paper); }
+.tb-sep { width:1px; background:var(--rule); margin:2px 2px; align-self:stretch; }
+.rte-body { min-height:150px; padding:10px; font-family:var(--fb); font-size:13px; color:var(--ink); line-height:1.75; outline:none; }
+.rte-body:empty::before { content:attr(data-ph); color:var(--rule); pointer-events:none; }
+.overlay { display:none; position:fixed; inset:0; z-index:10000; background:rgba(26,16,8,.82); align-items:center; justify-content:center; padding:16px; overflow-y:auto; }
+.overlay.open { display:flex; }
+.modal { background:var(--paper); border:2px solid var(--ink); max-width:600px; width:100%; padding:28px 24px; position:relative; max-height:92vh; overflow-y:auto; }
+.modal-sm { max-width:360px; }
+.modal-title { font-family:var(--fh); font-size:20px; letter-spacing:2px; border-bottom:2px solid var(--rule); padding-bottom:10px; margin-bottom:18px; text-align:center; }
+.modal-close { position:absolute; top:10px; right:14px; background:none; border:none; cursor:pointer; font-family:var(--fh); font-size:16px; color:var(--ink); padding:4px; }
+.modal-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+.modal-actions .submit-btn { flex:1; min-width:140px; }
+.login-modal { max-width:340px; border-color:var(--red); }
+.login-modal .modal-title { font-size:16px; border-color:var(--red); color:var(--red); }
+.lock-icon { font-size:32px; margin-bottom:10px; display:block; text-align:center; }
+.login-hint { font-size:10px; font-family:var(--fh); color:var(--smudge); letter-spacing:1px; text-align:center; margin-top:8px; opacity:.7; line-height:1.6; }
+.login-error { font-size:11px; color:var(--red); font-family:var(--fh); letter-spacing:1px; text-align:center; margin-top:6px; display:none; }
+.delete-modal { border-color:var(--red); }
+.delete-modal .modal-title { color:var(--red); border-color:var(--red); font-size:16px; }
+.delete-modal p { font-family:var(--fh); font-size:12px; color:var(--smudge); margin-bottom:16px; line-height:1.6; }
+footer { border-top:4px double var(--rule); padding:24px 20px 20px; margin-top:20px; font-family:var(--fh); color:var(--smudge); }
+.footer-inner { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:20px; }
+.footer-copy { font-size:10px; letter-spacing:3px; text-transform:uppercase; line-height:1.8; }
+.footer-links { display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
+.footer-links-title { font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--smudge); margin-bottom:2px; }
+.footer-link { display:flex; align-items:center; gap:6px; font-size:11px; letter-spacing:1px; color:var(--smudge); text-decoration:none; border-bottom:1px dashed var(--rule); padding-bottom:2px; transition:color .15s; }
+.footer-link:hover { color:var(--red); border-color:var(--red); }
+.footer-link .link-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; opacity:.7; }
+.footer-divider { border:none; border-top:1px solid var(--rule); margin:16px 0 0; }
+.admin-badge { display:inline-flex; align-items:center; gap:6px; font-family:var(--fh); font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--red); border:1px solid var(--red); padding:3px 8px; }
+.customize-panel { display:none; background:var(--bar-bg); border-bottom:2px solid var(--rule); padding:14px 20px; gap:12px; flex-wrap:wrap; }
+.customize-panel.open { display:flex; }
+.cg { display:flex; flex-direction:column; gap:4px; min-width:130px; }
+.cg label { font-family:var(--fh); font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--smudge); }
+.cg input[type=color] { width:100%; height:30px; border:1px solid var(--rule); cursor:pointer; padding:2px; }
+.cg select { width:100%; background:var(--paper); border:1px solid var(--rule); font-family:var(--fh); font-size:11px; padding:5px; color:var(--ink); }
 </style>
 </head>
 <body>
 
 <!-- MASTHEAD -->
 <header class="masthead">
-  <div class="masthead-meta">
-    <span id="live-date"></span>
-    <span class="hide-mobile">Vol. I &nbsp;·&nbsp; No. 1</span>
-    <span>Est. 2026</span>
-  </div>
+  <div class="masthead-date" id="live-date"></div>
   <h1 class="masthead-title">
-    <span class="r" style="--rot:-1.5deg;--bg:#1a1008;--col:#f2ead8">I</span><span class="r" style="--rot:0.5deg">n</span>&nbsp;<span class="r" style="--rot:-1deg">C</span><span class="r" style="--rot:1.5deg">a</span><span class="r" style="--rot:-0.5deg">s</span><span class="r" style="--rot:1deg">e</span>&nbsp;<span class="r" style="--rot:-0.5deg;--col:#8b1a1a">N</span><span class="r" style="--rot:1deg">o</span>&nbsp;<span class="r" style="--rot:-1.5deg;--bg:#8b1a1a;--col:#f2ead8">O</span><span class="r" style="--rot:0.5deg">n</span><span class="r" style="--rot:-1deg">e</span>&nbsp;<span class="r" style="--rot:1.5deg">A</span><span class="r" style="--rot:-1deg;--bg:#1a1008;--col:#f2ead8">s</span><span class="r" style="--rot:0.5deg">k</span><span class="r" style="--rot:-1.5deg">e</span><span class="r" style="--rot:1deg">d</span>
+    <span class="r" style="--rot:-1deg;--col:var(--red)">I</span>n 
+    <span class="r" style="--rot:1.5deg">C</span>ase 
+    <span class="r" style="--rot:-0.5deg">N</span>o 
+    <span class="r" style="--rot:1deg;--bg:var(--ink);--col:var(--paper)">O</span>ne 
+    <span class="r" style="--rot:-2deg">A</span>sked
   </h1>
-  <p class="masthead-tagline">Never meant to be neat &nbsp;·&nbsp; Just meant to be written</p>
+  <div class="masthead-tagline">Dispatches from the Unspoken, Unheard, and Unasked</div>
 </header>
 
-<!-- SETUP BANNER -->
-<div id="setup-banner">
-  ⚠ &nbsp;<strong>Supabase not connected yet.</strong> Open this file in a text editor, find <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code>, replace them with your real credentials. The blog still works locally — posts and comments just won't be saved to the database yet.
-</div>
-
-<!-- ADMIN BAR -->
-<div class="admin-bar">
-  <span class="brand">✦ ICNOA</span>
-  <button class="admin-btn" id="btn-new-post" style="display:none" onclick="openModal('new-post-modal')">+ New Post</button>
-  <button class="admin-btn ghost" id="btn-style" style="display:none" onclick="toggleCustomize()">⚙ Style</button>
-  <button class="admin-btn ghost" id="btn-login" onclick="openModal('login-modal')">🔑 Admin Login</button>
-  <button class="admin-btn ghost danger" id="btn-logout" style="display:none" onclick="adminLogout()">Logout</button>
-  <span class="admin-status" id="admin-status">Visitor</span>
-  <span class="post-count-label" id="post-count-label"></span>
-</div>
+<!-- TOP BAR -->
+<nav class="top-bar">
+  <div class="admin-badge" id="admin-badge" style="display:none">
+    <span>★</span> <span class="badge-text">Chief Editor</span>
+  </div>
+  <button class="btn btn-solid" id="btn-new-post" style="display:none" onclick="openNewPost()">+ Write Story</button>
+  <button class="btn btn-ghost" id="btn-style" style="display:none" onclick="toggleCustomize()">🎨 Layout</button>
+  <div class="ml-auto"></div>
+  <button class="btn btn-ghost btn-sm" id="btn-login" onclick="openModal('login-modal')">Editor Login</button>
+  <button class="btn btn-danger btn-sm" id="btn-logout" style="display:none" onclick="doLogout()">Logout</button>
+</nav>
 
 <!-- CUSTOMIZE PANEL -->
 <div class="customize-panel" id="customize-panel">
-  <div class="customize-group">
-    <label>Paper</label>
-    <input type="color" value="#f2ead8" onchange="setCSSVar('--paper',this.value)" />
+  <div class="cg">
+    <label>Ink Color</label>
+    <input type="color" value="#1a1008" oninput="setVar('--ink',this.value)">
   </div>
-  <div class="customize-group">
-    <label>Ink</label>
-    <input type="color" value="#1a1008" onchange="setCSSVar('--ink',this.value)" />
+  <div class="cg">
+    <label>Paper Tint</label>
+    <input type="color" value="#f2ead8" oninput="setVar('--paper',this.value)">
   </div>
-  <div class="customize-group">
+  <div class="cg">
     <label>Accent</label>
-    <input type="color" value="#8b1a1a" onchange="setCSSVar('--red',this.value)" />
-  </div>
-  <div class="customize-group">
-    <label>Rules</label>
-    <input type="color" value="#8b7355" onchange="setCSSVar('--rule',this.value)" />
-  </div>
-  <div class="customize-group">
-    <label>Heading Font</label>
-    <select onchange="document.documentElement.style.setProperty('--font-heading',this.value)">
-      <option value="'Special Elite', cursive">Special Elite (typewriter)</option>
-      <option value="'UnifrakturMaguntia', cursive">UnifrakturMaguntia (gothic)</option>
-      <option value="'Libre Baskerville', serif">Libre Baskerville (classic)</option>
-    </select>
+    <input type="color" value="#8b1a1a" oninput="setVar('--red',this.value)">
   </div>
 </div>
 
-<!-- MAIN CONTENT -->
-<main>
-  <div class="main-wrap">
+<main class="main-wrap">
+  <!-- POSTS COLUMN -->
+  <section class="posts-col" id="posts-container">
+    <p style="text-align:center;padding:40px;font-family:var(--fh);color:var(--smudge)">Loading dispatches...</p>
+  </section>
 
-    <div class="posts-col">
-      <div id="dynamic-posts"></div>
-    </div>
-
-    <!-- Desktop sidebar -->
-    <div class="sidebar-col">
-      <div class="sidebar-section">
-        <div class="sidebar-header"><span>✦ About This Gazette</span></div>
-        <p style="font-size:12px;line-height:1.7;color:var(--smudge);font-style:italic">
-          Two people. Unlimited opinions. Zero invitations. This is <em>In Case No One Asked</em> — a blog for thoughts the world didn't request but absolutely needs to hear.
-        </p>
+  <!-- SIDEBAR -->
+  <aside class="sidebar-col">
+    <div class="sidebar-sec">
+      <div class="sb-head">
+        <span>The Reader's Voice</span>
+        <span class="ccount-badge" id="ccount">0</span>
       </div>
-      <div class="sidebar-section">
-        <div class="sidebar-header">
-          <span>✉ Reader Mail</span>
-          <span class="comment-count" id="ccount">0</span>
-        </div>
-        <div id="comments-container"></div>
-        <div class="comment-form-title">✦ Leave a Note</div>
+      <div id="comments-container">
+        <p style="font-size:11px;color:var(--smudge);font-style:italic;text-align:center">The silence is deafening. Say something.</p>
+      </div>
+      
+      <div style="margin-top:20px;border-top:1px solid var(--rule);padding-top:15px">
         <div class="form-field">
-          <label>Your name (or alias)</label>
-          <input type="text" id="cname" placeholder="e.g. Mysterious Stranger" autocomplete="off" />
+          <label>Your Name</label>
+          <input type="text" id="cname" placeholder="Anonymous">
         </div>
         <div class="form-field">
-          <label>Your dispatch</label>
-          <textarea id="cmsg" placeholder="Thoughts, confessions, complaints..."></textarea>
+          <label>Your Message</label>
+          <textarea id="cmsg" placeholder="Write your thoughts..."></textarea>
         </div>
-        <button class="submit-btn" onclick="addComment('cname','cmsg')">— Submit Dispatch —</button>
+        <button class="submit-btn" onclick="addComment()">— Leave a Mark —</button>
       </div>
     </div>
 
-  </div>
+    <div class="sidebar-sec">
+      <div class="sb-head">About This Paper</div>
+      <p style="font-size:12px;line-height:1.7;color:var(--smudge);text-align:justify">
+        This is a repository for the thoughts that usually go unrecorded. No one asked for this, and yet, here it is. A digital broadsheet for the curious and the quiet.
+      </p>
+    </div>
+  </aside>
 </main>
 
-<!-- READER MAIL — mobile only, appears below posts -->
-<div class="reader-mail-section">
-  <div class="reader-mail-inner">
-    <div class="sidebar-header" style="font-size:14px;padding-bottom:8px;margin-bottom:16px">
-      <span>✉ Reader Mail</span>
-      <span class="comment-count" id="ccount-mobile">0</span>
+<footer>
+  <div class="footer-inner">
+    <div class="footer-copy">
+      © 2026 IN CASE NO ONE ASKED<br>
+      PUBLISHED IRREGULARLY · EST. 2024
     </div>
-    <div id="comments-container-mobile"></div>
-    <div class="comment-form-title">✦ Leave a Note</div>
-    <div class="form-field">
-      <label>Your name (or alias)</label>
-      <input type="text" id="cname-mobile" placeholder="e.g. Mysterious Stranger" autocomplete="off" />
+    <div class="footer-links">
+      <div class="footer-links-title">Connect</div>
+      <a href="#" class="footer-link"><span class="link-label">X/TW</span> @icnoa_blog</a>
+      <a href="#" class="footer-link"><span class="link-label">IG</span> @icnoa_archive</a>
     </div>
-    <div class="form-field">
-      <label>Your dispatch</label>
-      <textarea id="cmsg-mobile" placeholder="Thoughts, confessions, complaints..."></textarea>
-    </div>
-    <button class="submit-btn" onclick="addComment('cname-mobile','cmsg-mobile')">— Submit Dispatch —</button>
   </div>
-</div>
-
-<div class="counter-bar">— <span id="session-count">0</span> new dispatches this session —</div>
-
-<footer class="footer">
-  ✦ &nbsp; In Case No One Asked &nbsp; ✦ &nbsp; Printed on recycled audacity &nbsp; ✦ &nbsp; All opinions are final &nbsp; ✦
-  <br><span style="font-size:9px;opacity:0.55">Built with scissors, glue &amp; HTML</span>
+  <hr class="footer-divider">
 </footer>
 
-<div id="status-bar"></div>
-
-<!-- LOGIN MODAL -->
-<div class="modal-overlay" id="login-modal">
-  <div class="modal" style="max-width:380px">
-    <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
-    <div class="modal-title">✦ Staff Only ✦</div>
-    <p class="login-hint">Enter your admin passphrase to access the editorial desk.</p>
-    <div class="form-field">
-      <label>Passphrase</label>
-      <input type="password" id="login-pass" placeholder="••••••••"
-        onkeydown="if(event.key==='Enter')attemptLogin()" />
-    </div>
-    <div class="login-error" id="login-error">✕ Wrong passphrase. Try again.</div>
-    <div class="modal-actions" style="margin-top:16px">
-      <button class="submit-btn" onclick="attemptLogin()">— Enter the Newsroom —</button>
-    </div>
-  </div>
-</div>
-
-<!-- NEW POST MODAL -->
-<div class="modal-overlay" id="new-post-modal">
+<!-- MODALS -->
+<div class="overlay" id="post-modal">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('new-post-modal')">✕</button>
-    <div class="modal-title">✦ Write a New Story ✦</div>
-    <div class="form-field">
-      <label>Category</label>
-      <input type="text" id="p-cat" placeholder="Opinion" />
-    </div>
-    <div class="form-field">
-      <label>Headline</label>
-      <input type="text" id="p-title" placeholder="Something nobody asked for but needs to hear..." />
-    </div>
-    <div class="form-field">
-      <label>Byline</label>
-      <input type="text" id="p-byline" placeholder="By Your Name · Today's Date" />
+    <button class="modal-close" onclick="closeModal('post-modal')">✕</button>
+    <div class="modal-title" id="pm-title">✦ Write a New Story ✦</div>
+    <div class="form-field"><label>Headline</label><input type="text" id="p-title" placeholder="The Unspoken Truth..."/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-field"><label>Category</label><input type="text" id="p-cat" placeholder="Dispatch"/></div>
+      <div class="form-field"><label>Byline</label><input type="text" id="p-byline" placeholder="The Editors"/></div>
     </div>
     <div class="form-field">
       <label>Story Body</label>
-      <div class="editor-toolbar">
-        <button type="button" onclick="fmt('bold')"><b>B</b></button>
-        <button type="button" onclick="fmt('italic')"><i>I</i></button>
-        <button type="button" onclick="fmt('underline')"><u>U</u></button>
-        <div class="sep"></div>
-        <button type="button" onclick="fmt('strikeThrough')"><s>S</s></button>
-        <button type="button" onclick="fmt('insertUnorderedList')">• List</button>
-        <div class="sep"></div>
-        <button type="button" onclick="fmt('removeFormat')">Clear</button>
+      <div class="rte-wrap">
+        <div class="rte-toolbar">
+          <button class="tb" onclick="cmd('bold')"><b>B</b></button>
+          <button class="tb" onclick="cmd('italic')"><i>I</i></button>
+          <button class="tb" onclick="cmd('underline')"><u>U</u></button>
+          <div class="tb-sep"></div>
+          <button class="tb" onclick="wrapSz('sz-sm')">S</button>
+          <button class="tb" onclick="wrapSz('sz-lg')">L</button>
+          <button class="tb" onclick="wrapSz('sz-xl')">XL</button>
+          <div class="tb-sep"></div>
+          <button class="tb" onclick="cmd('formatBlock','blockquote')">“</button>
+        </div>
+        <div class="rte-body" id="rte" contenteditable="true" data-ph="Type your story here..."></div>
       </div>
-      <div class="rich-editor" id="p-body" contenteditable="true"
-           data-placeholder="Write your story here..."></div>
     </div>
+    <div class="form-field"><label>Tag (optional)</label><input type="text" id="p-tag" placeholder="Hot Take"/></div>
     <div class="form-field">
-      <label>Tag (optional)</label>
-      <input type="text" id="p-tag" placeholder="e.g. Hot Take" />
+      <label>Image (optional)</label>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button type="button" class="btn btn-ghost" style="transform:none;font-size:10px;padding:5px 10px" onclick="document.getElementById('modal-img').click()">📎 Choose Image</button>
+        <span style="font-size:10px;color:var(--smudge);font-family:var(--fh)" id="img-name">No file chosen</span>
+        <input type="file" id="modal-img" accept="image/*" style="display:none" onchange="prevImg(event)"/>
+      </div>
+      <div id="img-prev" style="margin-top:8px"></div>
     </div>
-    <div class="form-field">
-      <label>Image URL (optional)</label>
-      <input type="text" id="p-img" placeholder="https://example.com/photo.jpg" />
-    </div>
+    <input type="hidden" id="edit-id" value=""/>
     <div class="modal-actions">
-      <button class="submit-btn" id="publish-btn" onclick="publishPost()">— Publish Story —</button>
-      <button class="admin-btn ghost" style="transform:none;padding:9px 16px;font-size:10px" onclick="closeModal('new-post-modal')">Cancel</button>
+      <button class="submit-btn" id="pm-save-btn" onclick="savePost()">— Publish Story —</button>
+      <button class="btn btn-ghost" style="transform:none;padding:9px 16px;font-size:10px" onclick="closeModal('post-modal')">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- Supabase SDK (UMD build — exposes window.supabase) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<div class="overlay" id="del-modal">
+  <div class="modal modal-sm delete-modal">
+    <div class="modal-title">✕ Delete Story?</div>
+    <p>This cannot be undone. The words will vanish.</p>
+    <div class="modal-actions">
+      <button class="submit-btn" style="background:var(--red);transform:none" onclick="doDelete()">Yes, Delete</button>
+      <button class="btn btn-ghost" style="transform:none;flex:1;padding:9px" onclick="closeModal('del-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="login-modal">
+  <div class="modal modal-sm login-modal">
+    <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
+    <div class="lock-icon">🔒</div>
+    <div class="modal-title">Admin Login</div>
+    <div class="form-field"><label>Email</label><input type="email" id="login-email" placeholder="admin@example.com"/></div>
+    <div class="form-field"><label>Password</label><input type="password" id="login-pw" placeholder="••••••••"/></div>
+    <button class="submit-btn" onclick="doLogin()">Login</button>
+    <p class="login-error" id="login-error">Incorrect credentials.</p>
+  </div>
+</div>
+
 <script>
-'use strict';
+/* ─────────────────────────────────────────
+   ★  SUPABASE CONFIGURATION  ★
+   ───────────────────────────────────────── */
+const SUPABASE_URL = 'https://ewbuqklwkewybsqfdlew.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3YnVxa2x3a2V3eWJzcWZkbGV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NjMyNjgsImV4cCI6MjA5NTAzOTI2OH0.7qO298Y5IbrzWLddRTdQCftWnY1mABnVJZe2hlgSmEM';
+const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/* ═══════════════════════════════════════════
-   ★ STEP 1 — YOUR SUPABASE CREDENTIALS
-   Get from: supabase.com → project → Settings → API
-   ═══════════════════════════════════════════ */
-const SUPABASE_URL  = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
+let isAdmin = false, postCount = 0, modalImgSrc = null, selectedImageFile = null, pendingDeleteId = null;
+const postStore = {}, rState = {};
 
-/* ═══════════════════════════════════════════
-   ★ STEP 2 — YOUR ADMIN PASSWORDS
-   ═══════════════════════════════════════════ */
-const ADMIN_PASSWORDS = [
-  'editor-one-passphrase',
-  'editor-two-passphrase',
-];
+document.getElementById('live-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
-/* ─── globals ─── */
-const DB_READY = SUPABASE_URL !== 'YOUR_SUPABASE_URL';
-let   db       = null;
-let   isAdmin  = false;
-let   HASHED   = [];
-let   sessionCount = 0;
-
-/* ─── SHA-256 ─── */
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+async function checkAdminStatus() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();
+    isAdmin = profile && profile.is_admin;
+  } else { isAdmin = false; }
+  applyRole();
 }
 
-/* ─── Escape HTML ─── */
-function esc(s) {
-  if (typeof s !== 'string') return '';
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+async function doLogin() {
+  const email = document.getElementById('login-email').value, pw = document.getElementById('login-pw').value;
+  const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
+  if (error) { document.getElementById('login-error').textContent = error.message; document.getElementById('login-error').style.display = 'block'; }
+  else { await checkAdminStatus(); if (isAdmin) { closeModal('login-modal'); document.getElementById('login-error').style.display = 'none'; } }
 }
 
-/* ─── Status toast ─── */
-function showStatus(msg) { const b = document.getElementById('status-bar'); b.textContent = msg; b.style.display = 'block'; }
-function hideStatus()    { document.getElementById('status-bar').style.display = 'none'; }
+async function doLogout() { await supabase.auth.signOut(); isAdmin = false; applyRole(); fetchPosts(); }
 
-/* ─── Modal helpers ─── */
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-/* ─── Formatting ─── */
-function fmt(cmd) { document.getElementById('p-body').focus(); document.execCommand(cmd, false, null); }
-function toggleCustomize() { document.getElementById('customize-panel').classList.toggle('open'); }
-function setCSSVar(n, v)   { document.documentElement.style.setProperty(n, v); }
-
-/* ─── Toggle post body ─── */
-function toggleBody(id, btn) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const open = el.style.display !== 'none';
-  el.style.display = open ? 'none' : 'block';
-  if (btn) btn.textContent = open ? 'Read more ▾' : 'Collapse ▴';
+function applyRole() {
+  document.getElementById('admin-badge').style.display = isAdmin ? 'inline-flex' : 'none';
+  document.getElementById('btn-new-post').style.display = isAdmin ? '' : 'none';
+  document.getElementById('btn-style').style.display = isAdmin ? '' : 'none';
+  document.getElementById('btn-logout').style.display = isAdmin ? '' : 'none';
+  document.getElementById('btn-login').style.display = isAdmin ? 'none' : '';
+  document.querySelectorAll('article.post').forEach(a => refreshActions(a.id, true));
 }
 
-/* close modal on backdrop click */
-document.addEventListener('click', e => {
-  if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
-});
-
-/* ══════════════════════════════════════════
-   ADMIN AUTH
-══════════════════════════════════════════ */
-async function attemptLogin() {
-  const pass = document.getElementById('login-pass').value;
-  const h    = await sha256(pass);
-  if (HASHED.includes(h)) {
-    isAdmin = true;
-    sessionStorage.setItem('icnoa-admin', h);
-    applyAdminUI();
-    closeModal('login-modal');
-    document.getElementById('login-pass').value = '';
-    document.getElementById('login-error').classList.remove('visible');
-  } else {
-    document.getElementById('login-error').classList.add('visible');
-    document.getElementById('login-pass').select();
+function refreshActions(pid, expanded) {
+  const c = document.getElementById('pa-'+pid); if (!c) return;
+  let h = '';
+  if (isAdmin) {
+    h += `<button class="btn btn-edit" onclick="openEditPost('${pid}')">✎ Edit</button>`;
+    h += `<button class="btn btn-danger" onclick="confirmDelete('${pid}')">✕ Delete</button>`;
   }
+  c.innerHTML = h;
 }
 
-function adminLogout() {
-  isAdmin = false;
-  sessionStorage.removeItem('icnoa-admin');
-  applyAdminUI();
+async function fetchPosts() {
+  const { data, error } = await supabase.from('posts').select('*').eq('is_published', true).order('created_at', { ascending: false });
+  if (error) return;
+  const container = document.getElementById('posts-container'); container.innerHTML = '';
+  data.forEach(renderPost);
 }
 
-function applyAdminUI() {
-  document.body.classList.toggle('is-admin', isAdmin);
-  document.getElementById('btn-new-post').style.display = isAdmin ? 'inline-block' : 'none';
-  document.getElementById('btn-style').style.display    = isAdmin ? 'inline-block' : 'none';
-  document.getElementById('btn-login').style.display    = isAdmin ? 'none'         : 'inline-block';
-  document.getElementById('btn-logout').style.display   = isAdmin ? 'inline-block' : 'none';
-  const s = document.getElementById('admin-status');
-  s.textContent = isAdmin ? '✦ Editor' : 'Visitor';
-  s.classList.toggle('logged-in', isAdmin);
-}
-
-/* ══════════════════════════════════════════
-   REACTIONS
-══════════════════════════════════════════ */
-const REACTIONS = [
-  { emoji: '🔥', label: 'Fire'    },
-  { emoji: '💀', label: 'Dead'    },
-  { emoji: '😤', label: 'Preach'  },
-  { emoji: '🤌', label: 'Perfect' },
-  { emoji: '👀', label: 'Tea'     },
-];
-const reactionState = {};
-
-function buildReactions(container) {
-  const pid = container.dataset.post;
-  if (!reactionState[pid]) {
-    reactionState[pid] = REACTIONS.map(() => ({ count: Math.floor(Math.random()*6), reacted: false }));
-  }
-  container.innerHTML = '<span class="reactions-label">React:</span>';
-  REACTIONS.forEach((r, i) => {
-    const st  = reactionState[pid][i];
-    const btn = document.createElement('button');
-    btn.className = 'reaction-btn' + (st.reacted ? ' reacted' : '');
-    btn.style.setProperty('--rot', ((Math.random()-0.5)*2).toFixed(1)+'deg');
-    btn.innerHTML = `<span class="emoji">${r.emoji}</span><span class="rcount">${st.count}</span>`;
-    btn.title = r.label;
-    btn.addEventListener('click', () => {
-      st.reacted = !st.reacted;
-      st.count  += st.reacted ? 1 : -1;
-      buildReactions(container);
-    });
-    container.appendChild(btn);
-  });
-}
-
-/* ══════════════════════════════════════════
-   RENDER A SINGLE POST
-══════════════════════════════════════════ */
-function renderPost(post, prepend = false) {
-  const domId  = 'post-' + post.id;
-  const bodyId = 'pb-'   + post.id;
-  if (document.getElementById(domId)) return;
-
-  const stampHtml = post.stamp
-    ? `<div class="stamp" style="--rot:${post.stamp_rot||0}deg">${esc(post.stamp)}</div>` : '';
-  const imgHtml = post.img_src
-    ? `<img src="${esc(post.img_src)}" class="post-image" alt="" /><p class="post-image-caption">— image by author —</p>` : '';
-  const tagHtml = post.tag
-    ? `<div class="post-tags" style="margin-top:10px"><span class="torn-tag" style="--rot:-1.5deg">${esc(post.tag)}</span></div>` : '';
-
-  const collapsed  = post.collapsed !== false;
-  const toggleBtn  = `<button class="read-more-btn" onclick="toggleBody('${bodyId}',this)">${collapsed ? 'Read more ▾' : 'Collapse ▴'}</button>`;
-
-  const article = document.createElement('article');
-  article.className = 'post';
-  article.id = domId;
+function renderPost(post) {
+  const pid = post.id, article = document.createElement('article');
+  article.id = pid; article.className = 'post';
   article.innerHTML = `
-    ${stampHtml}
-    <div class="post-category">✦ ${esc(post.category)} ✦</div>
-    <h2 class="post-headline">${esc(post.title)}</h2>
-    <div class="post-byline"><span>${esc(post.byline)}</span>${toggleBtn}</div>
-    ${imgHtml}
-    <div class="post-body" id="${bodyId}" style="${collapsed ? 'display:none' : ''}">${post.body_html}</div>
-    ${tagHtml}
-    <div class="reactions" data-post="${post.id}"></div>
-    <button class="delete-post-btn" onclick="deletePost('${post.id}')">✕ Delete Post</button>
+    <div class="post-cat">✦ ${sx(post.category || 'Dispatch')} ✦</div>
+    <h2 class="post-headline">${sx(post.title)}</h2>
+    <div class="post-byline"><span>${sx(post.byline)}</span><div class="post-actions" id="pa-${pid}"></div></div>
+    ${post.image_url ? `<img src="${post.image_url}" class="post-img" alt="Post image"/>` : ''}
+    <div class="post-body" id="pb-${pid}">${post.body_html}</div>
+    ${post.tag ? `<div class="post-tags"><span class="torn-tag">${sx(post.tag)}</span></div>` : ''}
+    <div class="reactions" data-post="${pid}"></div>
   `;
-
-  const c = document.getElementById('dynamic-posts');
-  if (prepend) c.prepend(article); else c.appendChild(article);
-  buildReactions(article.querySelector('.reactions'));
+  document.getElementById('posts-container').appendChild(article);
+  postStore[pid] = { cat: post.category, headline: post.title, byline: post.byline, bodyHTML: post.body_html, tag: post.tag, imgSrc: post.image_url };
+  refreshActions(pid, true); buildReactions(article.querySelector('.reactions'));
 }
 
-function updatePostCount(n) {
-  document.getElementById('post-count-label').textContent = n + (n===1?' story':' stories') + ' published';
-}
-
-/* ══════════════════════════════════════════
-   SEED DATA
-══════════════════════════════════════════ */
-const SEED_POSTS = [
-  {
-    category: 'Origin Story', title: 'Nobody Asked, We Told You Anyway',
-    byline: 'By The Editors · April 30, 2026 · 4 min read',
-    body_html: 'Two writers — armed with nothing but unsolicited opinions, a moderate understanding of HTML, and an alarming number of strong feelings about things nobody brought up — decided that the world needed another blog. The world did not ask. We published anyway. This is the founding philosophy of everything you are about to read. Welcome to In Case No One Asked.',
-    tag: '', img_src: '', stamp: 'EXCLUSIVE', stamp_rot: 6, collapsed: false,
-  },
-  {
-    category: 'Culture', title: 'On the Virtues of Having a Blog Nobody Reads (Yet)',
-    byline: 'A Meditation on Obscurity · Apr 30, 2026',
-    body_html: 'There is a quiet dignity in shouting into the void. The void, after all, never talks back. Your hit counter reads "3" and two of those were you, refreshing in incognito mode to check if the font loaded. And yet — you wrote. You published. That is the spirit of In Case No One Asked.',
-    tag: '', img_src: '', stamp: '', stamp_rot: 0, collapsed: true,
-  },
-  {
-    category: 'Opinion', title: 'Fonts Are a Personality: A Defense of Too Many Typefaces',
-    byline: 'Editorial · Apr 30, 2026',
-    body_html: 'Some designers say consistency is key. Those people have never felt the primal joy of mixing a serif, a monospace, and a novelty display font in a single headline. They use Helvetica for everything. They sleep soundly at night. We pity them.',
-    tag: 'Hot Take', img_src: '', stamp: 'HOT TAKE', stamp_rot: -5, collapsed: true,
+async function buildReactions(wrap) {
+  const pid = wrap.dataset.post;
+  let current = rState[pid];
+  if (!current) {
+    const { data } = await supabase.from('reactions').select('*').eq('post_id', pid).single();
+    current = data || { fire_count:0, dead_count:0, preach_count:0, perfect_count:0, tea_count:0 };
+    rState[pid] = current;
   }
-];
-
-const SEED_COMMENTS = [
-  { name: 'Anonymous, Est. 1952', text: 'Finally, a publication that speaks to my soul. I too have had opinions nobody asked for. God bless you both.', rot: 0.6  },
-  { name: 'Y. Ornot, Somewhere',  text: "The typography is giving me anxiety in the best possible way. More please.", rot: -0.7 },
-];
-
-/* ══════════════════════════════════════════
-   LOAD POSTS
-══════════════════════════════════════════ */
-async function loadAllPosts() {
-  if (!DB_READY) {
-    SEED_POSTS.forEach((p, i) => renderPost({ ...p, id: 'seed-' + i }, false));
-    updatePostCount(SEED_POSTS.length);
-    return;
-  }
-  showStatus('Loading stories…');
-  const { data, error } = await db.from('posts').select('*').order('created_at', { ascending: false });
-  if (error) { showStatus('⚠ ' + error.message); return; }
-
-  if (data.length === 0) {
-    showStatus('First run — seeding…');
-    await db.from('posts').insert(SEED_POSTS);
-    const { data: s } = await db.from('posts').select('*').order('created_at', { ascending: false });
-    (s||[]).forEach(p => renderPost(p, false));
-    updatePostCount((s||[]).length);
-  } else {
-    data.forEach(p => renderPost(p, false));
-    updatePostCount(data.length);
-  }
-  hideStatus();
-}
-
-/* ══════════════════════════════════════════
-   DELETE POST
-══════════════════════════════════════════ */
-async function deletePost(postId) {
-  if (!isAdmin) return;
-  if (!confirm('Delete this post? This cannot be undone.')) return;
-  if (DB_READY && !String(postId).startsWith('seed-')) {
-    const { error } = await db.from('posts').delete().eq('id', postId);
-    if (error) { alert('Delete failed: ' + error.message); return; }
-  }
-  document.getElementById('post-' + postId)?.remove();
-  updatePostCount(document.getElementById('dynamic-posts').querySelectorAll('.post').length);
-}
-
-/* ══════════════════════════════════════════
-   PUBLISH POST
-══════════════════════════════════════════ */
-async function publishPost() {
-  if (!isAdmin) return;
-  const cat     = document.getElementById('p-cat').value.trim()   || 'Dispatch';
-  const title   = document.getElementById('p-title').value.trim();
-  const byline  = document.getElementById('p-byline').value.trim() ||
-    'The Editors · ' + new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  const bodyEl  = document.getElementById('p-body');
-  const bodyHtml = bodyEl.innerHTML.trim();
-  const tag     = document.getElementById('p-tag').value.trim();
-  const imgSrc  = document.getElementById('p-img').value.trim();
-
-  if (!title || !bodyHtml) { alert('Please add at least a headline and story body!'); return; }
-
-  const btn = document.getElementById('publish-btn');
-  btn.textContent = '— Publishing… —'; btn.disabled = true;
-
-  const payload = { category: cat, title, byline, body_html: bodyHtml, tag, img_src: imgSrc, stamp: '', stamp_rot: 0, collapsed: true };
-
-  if (!DB_READY) {
-    renderPost({ ...payload, id: 'local-' + Date.now() }, true);
-  } else {
-    const { data, error } = await db.from('posts').insert([payload]).select().single();
-    btn.textContent = '— Publish Story —'; btn.disabled = false;
-    if (error) { alert('Publish failed: ' + error.message); return; }
-    renderPost(data, true);
-    document.getElementById('post-' + data.id)?.scrollIntoView({ behavior:'smooth', block:'start' });
-  }
-
-  btn.textContent = '— Publish Story —'; btn.disabled = false;
-  updatePostCount(document.getElementById('dynamic-posts').querySelectorAll('.post').length);
-  ['p-cat','p-title','p-byline','p-tag','p-img'].forEach(id => document.getElementById(id).value = '');
-  bodyEl.innerHTML = '';
-  closeModal('new-post-modal');
-}
-
-/* ══════════════════════════════════════════
-   COMMENTS
-══════════════════════════════════════════ */
-function renderComment(c, prepend = false) {
-  const rot     = c.rot ?? ((Math.random()-0.5)*2);
-  const dateStr = c.date || (c.created_at ? c.created_at.slice(5,10).replace('-','/') : '');
-  ['comments-container','comments-container-mobile'].forEach(cid => {
-    const container = document.getElementById(cid);
-    if (!container) return;
-    const div = document.createElement('div');
-    div.className = 'comment';
-    div.style.setProperty('--rot', rot + 'deg');
-    div.innerHTML = `
-      <div class="comment-meta">
-        <span>${esc(c.name)}</span>
-        <span style="opacity:0.6">${esc(dateStr)}</span>
-      </div>
-      <div class="comment-text">${esc(c.text)}</div>
-    `;
-    if (prepend) container.prepend(div); else container.appendChild(div);
+  wrap.innerHTML = '<span class="reactions-label">React:</span>';
+  const REACTS = [{e:'🔥',col:'fire_count'},{e:'💀',col:'dead_count'},{e:'😤',col:'preach_count'},{e:'🤌',col:'perfect_count'},{e:'👀',col:'tea_count'}];
+  REACTS.forEach(r => {
+    const b = document.createElement('button'); b.className = 'r-btn';
+    b.innerHTML = `<span class="em">${r.e}</span><span class="rc">${current[r.col] || 0}</span>`;
+    b.onclick = () => updateReaction(pid, r.col, b);
+    wrap.appendChild(b);
   });
 }
 
-function updateCommentCount(n) {
-  document.getElementById('ccount').textContent        = n;
-  document.getElementById('ccount-mobile').textContent = n;
+async function updateReaction(pid, col, btn) {
+  const count = parseInt(btn.querySelector('.rc').textContent) + 1;
+  btn.querySelector('.rc').textContent = count;
+  await supabase.from('reactions').upsert({ post_id: pid, [col]: count }, { onConflict: 'post_id' });
+  rState[pid][col] = count;
 }
 
-async function loadAllComments() {
-  if (!DB_READY) {
-    SEED_COMMENTS.forEach(c => renderComment(c));
-    updateCommentCount(SEED_COMMENTS.length);
-    return;
+async function fetchComments() {
+  const { data } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
+  const container = document.getElementById('comments-container'); container.innerHTML = '';
+  if (!data || data.length === 0) { container.innerHTML = '<p style="font-size:11px;color:var(--smudge);font-style:italic;text-align:center">The silence is deafening. Say something.</p>'; }
+  else {
+    data.forEach(c => {
+      const div = document.createElement('div'); div.className='comment';
+      div.innerHTML=`<div class="cmeta"><span>${sx(c.author_name)}</span><span style="opacity:.6">${new Date(c.created_at).toLocaleDateString()}</span></div><div class="ctext">${sx(c.content)}</div>`;
+      container.appendChild(div);
+    });
   }
-  const { data, error } = await db.from('comments').select('*').order('created_at', { ascending: true });
-  if (error) { console.warn(error.message); return; }
-  if (data.length === 0) {
-    await db.from('comments').insert(SEED_COMMENTS);
-    const { data: s } = await db.from('comments').select('*').order('created_at', { ascending: true });
-    (s||[]).forEach(c => renderComment(c));
-    updateCommentCount((s||[]).length);
-  } else {
-    data.forEach(c => renderComment(c));
-    updateCommentCount(data.length);
-  }
+  document.getElementById('ccount').textContent = data ? data.length : 0;
 }
 
-async function addComment(nameId, msgId) {
-  const name = document.getElementById(nameId).value.trim();
-  const text = document.getElementById(msgId).value.trim();
-  if (!name || !text) { alert('Please fill in your name and a message!'); return; }
-
-  const rot  = +((Math.random()-0.5)*2).toFixed(1);
-  const date = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
-
-  if (!DB_READY) {
-    renderComment({ name, text, rot, date });
-  } else {
-    const { data, error } = await db.from('comments').insert([{ name, text, rot }]).select().single();
-    if (error) { alert('Could not save: ' + error.message); return; }
-    renderComment(data);
-  }
-
-  sessionCount++;
-  document.getElementById(nameId).value = '';
-  document.getElementById(msgId).value  = '';
-  document.getElementById('session-count').textContent = sessionCount;
-
-  const cid = msgId.includes('mobile') ? 'comments-container-mobile' : 'comments-container';
-  updateCommentCount(document.getElementById('comments-container').children.length);
-  document.getElementById(cid).lastElementChild?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+async function addComment() {
+  const name = document.getElementById('cname').value.trim(), msg = document.getElementById('cmsg').value.trim();
+  if (!name || !msg) return;
+  const { error } = await supabase.from('comments').insert([{ author_name: name, content: msg }]);
+  if (!error) { document.getElementById('cname').value = ''; document.getElementById('cmsg').value = ''; fetchComments(); }
 }
 
-/* ══════════════════════════════════════════
-   INIT — runs after page and SDK are ready
-══════════════════════════════════════════ */
-window.addEventListener('load', async () => {
+async function uploadImage(file) {
+  const path = `public/${Date.now()}_${file.name}`;
+  const { error } = await supabase.storage.from('blog-images').upload(path, file);
+  if (error) return null;
+  const { data: { publicUrl } } = supabase.storage.from('blog-images').getPublicUrl(path);
+  return publicUrl;
+}
 
-  /* Live date */
-  document.getElementById('live-date').textContent =
-    new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+function prevImg(e) {
+  const file = e.target.files[0]; if (!file) return;
+  selectedImageFile = file;
+  const reader = new FileReader();
+  reader.onload = (ev) => { document.getElementById('img-prev').innerHTML = `<img src="${ev.target.result}" style="width:100%;max-height:130px;object-fit:cover;border:1px solid var(--rule)"/>`; };
+  reader.readAsDataURL(file);
+}
 
-  /* Show setup banner if not configured */
-  if (!DB_READY) document.getElementById('setup-banner').classList.add('visible');
+async function savePost() {
+  if (!isAdmin) return;
+  const eid = document.getElementById('edit-id').value, title = document.getElementById('p-title').value.trim(), body = document.getElementById('rte').innerHTML.trim();
+  if (!title || !body) return;
+  let imgUrl = modalImgSrc; if (selectedImageFile) imgUrl = await uploadImage(selectedImageFile);
+  const data = { title, category: document.getElementById('p-cat').value || 'Dispatch', byline: document.getElementById('p-byline').value || 'The Editors', body_html: body, tag: document.getElementById('p-tag').value, image_url: imgUrl };
+  const { error } = eid ? await supabase.from('posts').update(data).eq('id', eid) : await supabase.from('posts').insert([data]);
+  if (!error) { closeModal('post-modal'); fetchPosts(); }
+}
 
-  /* Create Supabase client only when credentials are real */
-  if (DB_READY) db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+function confirmDelete(pid) { pendingDeleteId = pid; openModal('del-modal'); }
+async function doDelete() { if (!isAdmin) return; await supabase.from('posts').delete().eq('id', pendingDeleteId); closeModal('del-modal'); fetchPosts(); }
 
-  /* Hash passwords */
-  HASHED = await Promise.all(ADMIN_PASSWORDS.map(sha256));
+function openNewPost() {
+  document.getElementById('edit-id').value = ''; ['p-title','p-cat','p-byline','p-tag'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('rte').innerHTML = ''; document.getElementById('img-prev').innerHTML = ''; selectedImageFile = null; openModal('post-modal');
+}
 
-  /* Restore admin session */
-  const stored = sessionStorage.getItem('icnoa-admin');
-  if (stored && HASHED.includes(stored)) { isAdmin = true; applyAdminUI(); }
+function openEditPost(pid) {
+  const d = postStore[pid]; document.getElementById('edit-id').value = pid; document.getElementById('p-title').value = d.headline;
+  document.getElementById('p-cat').value = d.cat; document.getElementById('p-byline').value = d.byline; document.getElementById('p-tag').value = d.tag;
+  document.getElementById('rte').innerHTML = d.bodyHTML; modalImgSrc = d.imgSrc;
+  document.getElementById('img-prev').innerHTML = d.imgSrc ? `<img src="${d.imgSrc}" style="width:100%;max-height:130px;object-fit:cover;border:1px solid var(--rule)"/>` : '';
+  openModal('post-modal');
+}
 
-  /* Load content */
-  await Promise.all([loadAllPosts(), loadAllComments()]);
-  hideStatus();
-});
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function toggleCustomize() { document.getElementById('customize-panel').classList.toggle('open'); }
+function setVar(n,v) { document.documentElement.style.setProperty(n,v); }
+function cmd(c,v) { document.getElementById('rte').focus(); document.execCommand(c,false,v||null); }
+function sx(t) { const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+
+function wrapSz(cls) {
+  const ed=document.getElementById('rte'); ed.focus();
+  const sel=window.getSelection(); if (!sel.rangeCount||sel.isCollapsed) return;
+  const range=sel.getRangeAt(0), span=document.createElement('span'); span.className=cls;
+  try { range.surroundContents(span); } catch(_) { document.execCommand('insertHTML',false,`<span class="${cls}">${range.toString()}</span>`); }
+}
+
+document.addEventListener('DOMContentLoaded', () => { checkAdminStatus(); fetchPosts(); fetchComments(); });
+supabase.auth.onAuthStateChange(() => checkAdminStatus());
 </script>
 </body>
 </html>
