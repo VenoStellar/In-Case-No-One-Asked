@@ -3,7 +3,6 @@ import {
   deleteCommentModalMarkup,
   deleteModalMarkup,
   footerMarkup,
-  loginModalMarkup,
   mainMarkup,
   mastheadMarkup,
   postModalMarkup,
@@ -26,7 +25,6 @@ export function SiteStructure() {
       <MarkupBlock html={customizePanelMarkup} />
       <MarkupBlock html={mainMarkup} />
       <MarkupBlock html={footerMarkup} />
-      <MarkupBlock html={loginModalMarkup} />
       <MarkupBlock html={postModalMarkup} />
       <MarkupBlock html={deleteModalMarkup} />
       <MarkupBlock html={deleteCommentModalMarkup} />

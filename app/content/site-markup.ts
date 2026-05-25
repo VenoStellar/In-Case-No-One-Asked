@@ -67,13 +67,6 @@ export const topBarMarkup = `<!-- TOP BAR -->
             >
                 Logout
             </button>
-            <button
-                class="btn btn-ghost btn-sm ml-auto"
-                id="btn-login"
-                onclick="openModal('login-modal')"
-            >
-                Admin Login
-            </button>
         </div>`;
 
 export const customizePanelMarkup = `<!-- CUSTOMIZE PANEL -->
@@ -430,40 +423,6 @@ export const footerMarkup = `<!-- FOOTER -->
                 Built with scissors, glue &amp; HTML
             </div>
         </footer>`;
-
-export const loginModalMarkup = `<!-- ADMIN LOGIN MODAL -->
-        <div class="overlay" id="login-modal">
-            <div class="modal login-modal">
-                <button class="modal-close" onclick="closeModal('login-modal')">
-                    ✕
-                </button>
-                <span class="lock-icon">🔐</span>
-                <div class="modal-title">Admin Access</div>
-                <div class="form-field">
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        id="login-pw"
-                        placeholder="Enter admin password"
-                        onkeydown="if (event.key === 'Enter') doLogin();"
-                        autocomplete="current-password"
-                    />
-                </div>
-                <div class="login-error" id="login-error">
-                    ✕ Wrong password. Try again.
-                </div>
-                <button
-                    class="submit-btn"
-                    onclick="doLogin()"
-                    style="margin-top: 8px"
-                >
-                    — Enter —
-                </button>
-                <p class="login-hint">
-                    Set <code>SANITY_ADMIN_PASSWORD</code> for production.
-                </p>
-            </div>
-        </div>`;
 
 export const postModalMarkup = `<!-- WRITE / EDIT POST MODAL -->
         <div class="overlay" id="post-modal">
