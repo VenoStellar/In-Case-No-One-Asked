@@ -4,7 +4,13 @@ import Script from 'next/script';
 
 export const dynamic = 'force-static';
 
-function getLegacyDocument() {
+type LegacyDocument = {
+  styles: string;
+  body: string;
+  script: string;
+};
+
+function getLegacyDocument(): LegacyDocument {
   const html = fs.readFileSync(path.join(process.cwd(), 'index.html'), 'utf8');
   const styles = html.match(/<style>([\s\S]*?)<\/style>/i)?.[1] ?? '';
   const body = html.match(/<body>([\s\S]*?)<script>/i)?.[1] ?? '';
@@ -17,14 +23,14 @@ function getLegacyDocument() {
   };
 }
 
-function makeStartupSafe(script) {
+function makeStartupSafe(script: string): string {
   const scriptWithSafeGlobals = script
     .replace(/\bsupabase\b/g, 'supabaseClient')
     .replace(/window\.supabaseClient/g, 'window.supabase');
 
   return scriptWithSafeGlobals.replace(
     /document\.addEventListener\('DOMContentLoaded', async \(\) => \{([\s\S]*?)\n\}\);/,
-    (_, startupBody) => `async function startLegacyApp() {${startupBody}\n}\nif (document.readyState === 'loading') {\n  document.addEventListener('DOMContentLoaded', startLegacyApp);\n} else {\n  startLegacyApp();\n}`,
+    (_match: string, startupBody: string) => `async function startLegacyApp() {${startupBody}\n}\nif (document.readyState === 'loading') {\n  document.addEventListener('DOMContentLoaded', startLegacyApp);\n} else {\n  startLegacyApp();\n}`,
   );
 }
 

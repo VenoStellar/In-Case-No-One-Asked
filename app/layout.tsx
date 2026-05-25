@@ -1,14 +1,21 @@
-export const metadata = {
+import type { Metadata, Viewport } from 'next';
+import type { ReactNode } from 'react';
+
+export const metadata: Metadata = {
   title: 'In Case No One Asked',
   description: 'Our personal blog',
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
 };
 
-export default function RootLayout({ children }) {
+type RootLayoutProps = {
+  children: ReactNode;
+};
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <head>
