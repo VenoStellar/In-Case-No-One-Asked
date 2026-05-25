@@ -379,12 +379,9 @@ export const mainMarkup = `<!-- MAIN -->
                     </div>
                 </div>
             </div>
-        </main>
+        </main>`;
 
-        <!-- ══════════════════════════════════════════════════`;
-
-export const footerMarkup = `FOOTER
-     ══════════════════════════════════════════════════ -->
+export const footerMarkup = `<!-- FOOTER -->
         <footer>
             <div class="footer-inner">
                 <div class="footer-copy">
@@ -432,12 +429,9 @@ export const footerMarkup = `FOOTER
             >
                 Built with scissors, glue &amp; HTML
             </div>
-        </footer>
+        </footer>`;
 
-        <!-- ══════════════════════════════════════════════════`;
-
-export const loginModalMarkup = `ADMIN LOGIN MODAL
-     ══════════════════════════════════════════════════ -->
+export const loginModalMarkup = `<!-- ADMIN LOGIN MODAL -->
         <div class="overlay" id="login-modal">
             <div class="modal login-modal">
                 <button class="modal-close" onclick="closeModal('login-modal')">
@@ -467,16 +461,12 @@ export const loginModalMarkup = `ADMIN LOGIN MODAL
                 </button>
                 <p class="login-hint">
                     Default password: <strong>icnoa2026</strong><br />
-                    Change it: find <code>ADMIN_PASS</code> in the
-                    &lt;script&gt; below.
+                    Change it in <code>public/legacy-app.js</code>.
                 </p>
             </div>
-        </div>
+        </div>`;
 
-        <!-- ══════════════════════════════════════════════════`;
-
-export const postModalMarkup = `WRITE / EDIT POST MODAL
-     ══════════════════════════════════════════════════ -->
+export const postModalMarkup = `<!-- WRITE / EDIT POST MODAL -->
         <div class="overlay" id="post-modal">
             <div class="modal">
                 <button class="modal-close" onclick="closeModal('post-modal')">
@@ -732,8 +722,4 @@ export const deleteCommentModalMarkup = `<!-- DELETE COMMENT CONFIRM -->
                     </button>
                 </div>
             </div>
-        </div>
-
-        <!-- ══════════════════════════════════════════════════
-     JAVASCRIPT
-     ══════════════════════════════════════════════════ -->`;
+        </div>`;
