@@ -3,27 +3,52 @@ import {requireSanityWriteToken, sanityWriteClient} from '@/lib/sanity/client';
 import {mutationConfigErrorResponse} from '../_sanity';
 
 const countFields = ['fireCount', 'deadCount', 'preachCount', 'perfectCount', 'teaCount'] as const;
+type CountField = (typeof countFields)[number];
+
+function isCountField(value: string): value is CountField {
+  return countFields.includes(value as CountField);
+}
 
 export async function POST(request: NextRequest) {
   try {
     requireSanityWriteToken();
     const body = await request.json();
     const postId = String(body.postId || '').trim();
+    const field = String(body.field || '').trim();
+    const delta = Number(body.delta || 0);
 
     if (!postId) {
       return NextResponse.json({error: 'postId is required.'}, {status: 400});
     }
 
-    const counts = Object.fromEntries(
-      countFields.map((field) => [field, Math.max(0, Number(body[field] || 0))]),
-    );
+    if (!isCountField(field)) {
+      return NextResponse.json({error: 'A valid reaction field is required.'}, {status: 400});
+    }
 
-    const reaction = await sanityWriteClient.createOrReplace({
-      _id: `reaction-${postId}`,
+    if (delta !== 1 && delta !== -1) {
+      return NextResponse.json({error: 'delta must be 1 or -1.'}, {status: 400});
+    }
+
+    const reactionId = `reaction-${postId}`;
+
+    await sanityWriteClient.createIfNotExists({
+      _id: reactionId,
       _type: 'reaction',
       postId,
-      ...counts,
+      fireCount: 0,
+      deadCount: 0,
+      preachCount: 0,
+      perfectCount: 0,
+      teaCount: 0,
     });
+
+    const currentCounts = await sanityWriteClient.fetch<Record<CountField, number> | null>(
+      `*[_id == $reactionId][0]{fireCount, deadCount, preachCount, perfectCount, teaCount}`,
+      {reactionId},
+    );
+    const nextCount = Math.max(0, Number(currentCounts?.[field] || 0) + delta);
+
+    const reaction = await sanityWriteClient.patch(reactionId).set({[field]: nextCount}).commit();
 
     return NextResponse.json({reaction});
   } catch (error) {
