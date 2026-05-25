@@ -18,7 +18,11 @@ function getLegacyDocument() {
 }
 
 function makeStartupSafe(script) {
-  return script.replace(
+  const scriptWithSafeGlobals = script
+    .replace(/\bsupabase\b/g, 'supabaseClient')
+    .replace(/window\.supabaseClient/g, 'window.supabase');
+
+  return scriptWithSafeGlobals.replace(
     /document\.addEventListener\('DOMContentLoaded', async \(\) => \{([\s\S]*?)\n\}\);/,
     (_, startupBody) => `async function startLegacyApp() {${startupBody}\n}\nif (document.readyState === 'loading') {\n  document.addEventListener('DOMContentLoaded', startLegacyApp);\n} else {\n  startLegacyApp();\n}`,
   );
