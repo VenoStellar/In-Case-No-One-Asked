@@ -1,6 +1,4 @@
-const ADMIN_PASS = 'icnoa2026';
-
-let isAdmin = localStorage.getItem('isAdmin') === 'true';
+let isAdmin = false;
 let commentCount = 0;
 let modalImgSrc = null;
 let selectedImageFile = null;
@@ -135,22 +133,6 @@ function createPostArticle(post) {
   return article;
 }
 
-function doLogin() {
-  const pw = document.getElementById('login-pw').value;
-  if (pw === ADMIN_PASS) {
-    isAdmin = true;
-    localStorage.setItem('isAdmin', 'true');
-    sessionStorage.setItem('adminPassword', pw);
-    closeModal('login-modal');
-    document.getElementById('login-pw').value = '';
-    document.getElementById('login-error').style.display = 'none';
-    applyRole();
-  } else {
-    document.getElementById('login-error').style.display = 'block';
-    document.getElementById('login-pw').select();
-  }
-}
-
 function doLogout() {
   isAdmin = false;
   localStorage.removeItem('isAdmin');
@@ -164,13 +146,11 @@ function applyRole() {
   const btnNewPost = document.getElementById('btn-new-post');
   const btnStyle = document.getElementById('btn-style');
   const btnLogout = document.getElementById('btn-logout');
-  const btnLogin = document.getElementById('btn-login');
 
   if (adminBadge) adminBadge.style.display = isAdmin ? 'inline-flex' : 'none';
   if (btnNewPost) btnNewPost.style.display = isAdmin ? '' : 'none';
   if (btnStyle) btnStyle.style.display = isAdmin ? '' : 'none';
   if (btnLogout) btnLogout.style.display = isAdmin ? '' : 'none';
-  if (btnLogin) btnLogin.style.display = isAdmin ? 'none' : '';
 
   document.querySelectorAll('article.post').forEach((article) => {
     refreshActions(article.id, article.dataset.expanded === 'true');
@@ -343,33 +323,63 @@ function buildReactionsForPost(pid) {
 
   REACTS.forEach((react, index) => {
     const state = rState[pid][index];
-    const voted = hasVoted(pid, index);
+    const voted = getVotedReaction(pid) === index;
     const button = document.createElement('button');
     button.className = 'r-btn' + (voted ? ' on' : '');
     button.innerHTML = `<span class="em">${react.e}</span><span class="rc">${state.n}</span>`;
-    button.title = voted ? `${react.l} (already reacted)` : react.l;
+    button.title = voted ? `Remove your ${react.l} reaction` : react.l;
     button.onclick = () => toggleReaction(pid, index);
     wrap.appendChild(button);
   });
 }
 
 async function toggleReaction(pid, emojiIdx) {
-  if (hasVoted(pid, emojiIdx)) return;
-
+  const react = REACTS[emojiIdx];
+  const currentReaction = getVotedReaction(pid);
+  const voted = currentReaction === emojiIdx;
+  const previousReaction = currentReaction;
+  const previousCounts = rState[pid].map((state) => state.n);
   const state = rState[pid][emojiIdx];
-  state.n += 1;
-  setVotedReaction(pid, emojiIdx);
+
+  if (voted && state.n <= 0) return;
+
+  if (voted) {
+    state.n = Math.max(0, state.n - 1);
+    setVotedReaction(pid, null);
+  } else {
+    if (previousReaction !== null) {
+      rState[pid][previousReaction].n = Math.max(0, rState[pid][previousReaction].n - 1);
+    }
+    state.n += 1;
+    setVotedReaction(pid, emojiIdx);
+  }
+
   buildReactionsForPost(pid);
 
   try {
-    const payload = { postId: pid };
-    REACTS.forEach((react, index) => {
-      payload[react.col] = rState[pid][index].n;
-    });
-    await apiFetch('/api/reactions', { method: 'POST', body: JSON.stringify(payload) });
+    if (voted) {
+      await saveReactionDelta(pid, react.col, -1);
+    } else {
+      if (previousReaction !== null) {
+        await saveReactionDelta(pid, REACTS[previousReaction].col, -1);
+      }
+      await saveReactionDelta(pid, react.col, 1);
+    }
   } catch (e) {
+    previousCounts.forEach((count, index) => {
+      rState[pid][index].n = count;
+    });
+    setVotedReaction(pid, previousReaction);
+    buildReactionsForPost(pid);
     console.error('Failed to save reaction:', e);
   }
+}
+
+function saveReactionDelta(pid, field, delta) {
+  return apiFetch('/api/reactions', {
+    method: 'POST',
+    body: JSON.stringify({ postId: pid, field, delta }),
+  });
 }
 
 function getVotedReactions() {
@@ -380,16 +390,29 @@ function getVotedReactions() {
   }
 }
 
-function setVotedReaction(pid, emojiIdx) {
+function getVotedReaction(pid) {
   const voted = getVotedReactions();
-  if (!voted[pid]) voted[pid] = {};
-  voted[pid][emojiIdx] = true;
-  localStorage.setItem('votedReactions', JSON.stringify(voted));
+  const value = voted[pid];
+
+  if (typeof value === 'number') return value;
+  if (value && typeof value === 'object') {
+    const legacyIndex = Object.keys(value).find((key) => value[key]);
+    return legacyIndex === undefined ? null : Number(legacyIndex);
+  }
+
+  return null;
 }
 
-function hasVoted(pid, emojiIdx) {
+function setVotedReaction(pid, emojiIdx) {
   const voted = getVotedReactions();
-  return Boolean(voted[pid] && voted[pid][emojiIdx]);
+
+  if (emojiIdx === null) {
+    delete voted[pid];
+  } else {
+    voted[pid] = emojiIdx;
+  }
+
+  localStorage.setItem('votedReactions', JSON.stringify(voted));
 }
 
 function renderComments(comments) {
