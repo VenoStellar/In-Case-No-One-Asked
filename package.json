@@ -8,12 +8,20 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "sanity:dev": "sanity dev",
+    "sanity:deploy": "sanity deploy",
+    "sanity:seed": "node scripts/seed-sanity.mjs",
+    "supabase:readout": "node scripts/export-supabase-readout.mjs"
   },
   "dependencies": {
+    "@sanity/client": "^7.22.0",
+    "@sanity/vision": "^5.26.0",
     "next": "latest",
+    "next-sanity": "^13.0.3",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "sanity": "^5.26.0"
   },
   "devDependencies": {
     "@types/node": "latest",

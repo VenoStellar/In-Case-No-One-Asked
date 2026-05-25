@@ -328,7 +328,7 @@ export const mainMarkup = `<!-- MAIN -->
                             <span class="ccount-badge" id="ccount">0</span>
                         </div>
 
-                        <!-- Comments load here from Supabase (or live from this session) -->
+                        <!-- Comments load here from Sanity CMS -->
                         <div id="comments-container">
                             <p
                                 style="
@@ -460,8 +460,7 @@ export const loginModalMarkup = `<!-- ADMIN LOGIN MODAL -->
                     — Enter —
                 </button>
                 <p class="login-hint">
-                    Default password: <strong>icnoa2026</strong><br />
-                    Change it in <code>public/legacy-app.js</code>.
+                    Set <code>SANITY_ADMIN_PASSWORD</code> for production.
                 </p>
             </div>
         </div>`;
