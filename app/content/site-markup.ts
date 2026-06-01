@@ -192,24 +192,32 @@ export const mainMarkup = `<!-- MAIN -->
                         </div>
                         <!-- ✏️ EDIT YOUR ORIGIN STORY BODY HERE -->
                         <div class="post-body" id="pb-post-1">
-                            Two writers — armed with nothing but unsolicited
-                            opinions, a moderate understanding of HTML, and an
-                            alarming number of strong feelings about things
-                            nobody brought up — decided that the world needed
-                            another blog. The world did not ask. We published
-                            anyway. This is, in fact, the founding philosophy of
-                            everything you are about to read. We have opinions
-                            on your favourite films, your breakfast choices, the
-                            way society is going, and whether pineapple belongs
-                            on pizza
-                            <strong
-                                >(it does, and we will not be debating
-                                this).</strong
-                            >
-                            You did not request any of this. That has never
-                            stopped us before, and it will not stop us now.
-                            <em>Welcome to In Case No One Asked.</em> You're
-                            here now. Might as well read.
+                            <body>
+
+    <p>
+        We're Lina and Falaq, two best friends, study partners, and ambitious twenty-somethings who somehow always find ourselves talking about everything.
+    </p>
+
+    <p>
+        Between late-night thoughts, plans, random opinions, university chaos, and everything else that comes with figuring out life, we realized we had a lot to say.
+    </p>
+
+    <p>
+        This isn't a productivity blog, a self-help guide, or a collection of perfect answers. It's simply a space for honest thoughts, stories, conversations, and observations from two people trying to make sense of the world while finding their place in it.
+    </p>
+
+    <p>
+        In an era where everyone and their mother is starting a podcast, we decided to do something slower, more personal, maybe.
+    </p>
+
+<blockquote>
+    <p>A blog.</p>
+    <p>Maybe nobody asked.</p>
+    <p>But that's kind of the point.</p>
+    <p>Welcome to <em>In Case No One Asked</em>.</p>
+</blockquote>
+
+
                         </div>
                         <div class="post-tags" style="margin-top: 10px">
                             <span class="torn-tag" style="--rot: -1.5deg"
@@ -255,16 +263,7 @@ export const mainMarkup = `<!-- MAIN -->
                             id="pb-post-2"
                             style="display: none"
                         >
-                            There is a quiet dignity in shouting into the void.
-                            The void, after all, never talks back. Your hit
-                            counter reads "3" and two of those were you,
-                            refreshing in incognito mode to check if the font
-                            loaded. The third was a web crawler from a country
-                            that doesn't exist anymore. And yet — you wrote. You
-                            published. You told the algorithm:
-                            <strong>I AM HERE.</strong> The algorithm did not
-                            respond. You published again anyway. That is the
-                            spirit of <em>In Case No One Asked.</em>
+                            
                         </div>
                         <div class="reactions" data-post="post-2"></div>
                     </article>
@@ -295,15 +294,6 @@ export const mainMarkup = `<!-- MAIN -->
                             id="pb-post-3"
                             style="display: none"
                         >
-                            Some designers say consistency is key. Those people
-                            have never felt the primal joy of mixing a serif, a
-                            monospace, and a novelty display font in a single
-                            headline — and <em>feeling</em>, truly feeling, that
-                            it works.
-                            <strong
-                                >This is not chaos. This is character.</strong
-                            >
-                            You didn't ask for this opinion. You have it now.
                         </div>
                         <div class="reactions" data-post="post-3"></div>
                     </article>
@@ -378,9 +368,8 @@ export const footerMarkup = `<!-- FOOTER -->
         <footer>
             <div class="footer-inner">
                 <div class="footer-copy">
-                    ✦ &nbsp; In Case No One Asked &nbsp; ✦
-                    />All opinions are
-                    final
+                    ✦ &nbsp; In Case No One Asked &nbsp; ✦<br>
+                    &nbsp; &nbsp; &nbsp; All Opinions are Final
                 </div>
 
                 <div class="footer-links">

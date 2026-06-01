@@ -8,10 +8,10 @@ const postStore = {};
 const rState = {};
 
 const REACTS = [
-  { e: '🔥', l: 'Fire', col: 'fireCount' },
-  { e: '💀', l: 'Dead', col: 'deadCount' },
-  { e: '😤', l: 'Preach', col: 'preachCount' },
-  { e: '🤌', l: 'Perfect', col: 'perfectCount' },
+  { e: '❤️', l: 'Heart', col: 'heartCount' },
+  { e: '👍', l: 'Like', col: 'likeCount' },
+  { e: '👎', l: 'Dislike', col: 'dislikeCount' },
+  { e: '😂', l: 'Laugh', col: 'laughCount' },
   { e: '👀', l: 'Tea', col: 'teaCount' },
 ];
 
