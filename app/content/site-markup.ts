@@ -379,7 +379,7 @@ export const footerMarkup = `<!-- FOOTER -->
             <div class="footer-inner">
                 <div class="footer-copy">
                     ✦ &nbsp; In Case No One Asked &nbsp; ✦
-                    <br />Printed on recycled audacity <br />All opinions are
+                    />All opinions are
                     final
                 </div>
 
@@ -387,18 +387,18 @@ export const footerMarkup = `<!-- FOOTER -->
                     <div class="footer-links-title">✦ Find Us</div>
 
                     <!-- ✏️ REPLACE with your real emails / links -->
-                    <a class="footer-link" href="mailto:yourname@email.com">
+                    <a class="footer-link" href="mailto:floogmajeed@gmail.com">
                         <span>✉</span>
                         <span>
-                            <span class="link-label">Writer One &nbsp;—</span>
-                            yourname@email.com
+                            <span class="link-label">Falaq &nbsp;—</span>
+                            floogmajeed@gmail.com
                         </span>
                     </a>
-                    <a class="footer-link" href="mailto:friendname@email.com">
+                    <a class="footer-link" href="mailto:linayasirkhairy@gmail.com">
                         <span>✉</span>
                         <span>
-                            <span class="link-label">Writer Two &nbsp;—</span>
-                            friendname@email.com
+                            <span class="link-label">Lina &nbsp;—</span>
+                            linayasirkhairy@gmail.com
                         </span>
                     </a>
 
@@ -420,7 +420,6 @@ export const footerMarkup = `<!-- FOOTER -->
                     text-align: center;
                 "
             >
-                Built with scissors, glue &amp; HTML
             </div>
         </footer>`;
 
