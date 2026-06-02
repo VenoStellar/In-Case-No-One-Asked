@@ -2,7 +2,7 @@ import {NextRequest, NextResponse} from 'next/server';
 import {requireSanityWriteToken, sanityWriteClient} from '@/lib/sanity/client';
 import {mutationConfigErrorResponse} from '../_sanity';
 
-const countFields = ['fireCount', 'deadCount', 'preachCount', 'perfectCount', 'teaCount'] as const;
+const countFields = ['heartCount', 'likeCount', 'dislikeCount', 'laughCount', 'teaCount'] as const;
 type CountField = (typeof countFields)[number];
 
 function isCountField(value: string): value is CountField {
@@ -35,15 +35,15 @@ export async function POST(request: NextRequest) {
       _id: reactionId,
       _type: 'reaction',
       postId,
-      fireCount: 0,
-      deadCount: 0,
-      preachCount: 0,
-      perfectCount: 0,
+      heartCount: 0,
+      likeCount: 0,
+      dislikeCount: 0,
+      laughCount: 0,
       teaCount: 0,
     });
 
     const currentCounts = await sanityWriteClient.fetch<Record<CountField, number> | null>(
-      `*[_id == $reactionId][0]{fireCount, deadCount, preachCount, perfectCount, teaCount}`,
+      `*[_id == $reactionId][0]{heartCount, likeCount, dislikeCount, laughCount, teaCount}`,
       {reactionId},
     );
     const nextCount = Math.max(0, Number(currentCounts?.[field] || 0) + delta);
