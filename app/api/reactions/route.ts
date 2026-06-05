@@ -1,5 +1,6 @@
 import {NextRequest, NextResponse} from 'next/server';
-import {requireSanityWriteToken, sanityWriteClient} from '@/lib/sanity/client';
+import {revalidatePath} from 'next/cache';
+import {sanityWriteClient} from '@/lib/sanity/client';
 import {mutationConfigErrorResponse} from '../_sanity';
 
 const countFields = ['heartCount', 'likeCount', 'dislikeCount', 'laughCount', 'teaCount'] as const;
@@ -11,7 +12,6 @@ function isCountField(value: string): value is CountField {
 
 export async function POST(request: NextRequest) {
   try {
-    requireSanityWriteToken();
     const body = await request.json();
     const postId = String(body.postId || '').trim();
     const field = String(body.field || '').trim();
@@ -49,6 +49,9 @@ export async function POST(request: NextRequest) {
     const nextCount = Math.max(0, Number(currentCounts?.[field] || 0) + delta);
 
     const reaction = await sanityWriteClient.patch(reactionId).set({[field]: nextCount}).commit();
+
+    // Revalidate the home page to reflect updated reactions
+    revalidatePath('/', 'layout');
 
     return NextResponse.json({reaction});
   } catch (error) {
