@@ -23,10 +23,10 @@ export const contentQuery = `{
   "reactions": *[_type == "reaction"] {
     _id,
     postId,
-    fireCount,
-    deadCount,
-    preachCount,
-    perfectCount,
+    heartCount,
+    likeCount,
+    dislikeCount,
+    laughCount,
     teaCount,
     legacyPostId
   }
