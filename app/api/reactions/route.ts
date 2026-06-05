@@ -1,5 +1,4 @@
 import {NextRequest, NextResponse} from 'next/server';
-import {revalidatePath} from 'next/cache';
 import {sanityWriteClient} from '@/lib/sanity/client';
 import {mutationConfigErrorResponse} from '../_sanity';
 
@@ -49,9 +48,6 @@ export async function POST(request: NextRequest) {
     const nextCount = Math.max(0, Number(currentCounts?.[field] || 0) + delta);
 
     const reaction = await sanityWriteClient.patch(reactionId).set({[field]: nextCount}).commit();
-
-    // Revalidate the home page to reflect updated reactions
-    revalidatePath('/', 'layout');
 
     return NextResponse.json({reaction});
   } catch (error) {
