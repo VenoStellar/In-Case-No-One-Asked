@@ -245,7 +245,7 @@ export const mainMarkup = `<!-- MAIN -->
                         <div class="post-byline">
                             <!-- ✏️ CHANGE BYLINE -->
                             <span
-                                >A Meditation on Obscurity &nbsp;·&nbsp; Apr 30,
+                                >A Meditation &nbsp;·&nbsp; Apr 30,
                                 2026</span
                             >
                             <div class="post-actions" id="pa-post-2">
