@@ -4,7 +4,7 @@ let modalImgSrc = null;
 let selectedImageFile = null;
 let pendingDeleteId = null;
 let pendingCommentDeleteId = null;
-const postStore = {};
+window.postStore = {};
 const rState = {};
 
 const REACTS = [
@@ -62,7 +62,7 @@ async function loadContentFromSanity() {
     renderPosts(data.posts || []);
     loadAllReactions(data.reactions || []);
     buildReactions();
-    renderComments(data.comments || []);
+    renderPostComments(data.posts || []);
   } catch (e) {
     console.error('Could not load content from Sanity:', e);
     const postsCol = document.getElementById('posts-col');
@@ -95,6 +95,8 @@ function createPostArticle(post) {
   const article = document.createElement('article');
   const pid = `post-${post._id}`;
   const bodyId = `pb-${pid}`;
+  const commentsId = `pc-${pid}`;
+  const commentFormId = `cf-${pid}`;
   const isPinned = Boolean(post.isPinned);
   const tagHtml = post.tag
     ? `<div class="post-tags" style="margin-top:10px"><span class="torn-tag" style="--rot:-1deg">${sx(post.tag)}</span></div>`
@@ -117,7 +119,24 @@ function createPostArticle(post) {
     ${imageHtml}
     <div class="post-body" id="${bodyId}"${isPinned ? '' : ' style="display:none"'}>${post.bodyHtml || ''}</div>
     ${tagHtml}
-    <div class="reactions" data-post="${sx(post._id)}"></div>`;
+    <div class="reactions" data-post="${sx(post._id)}"></div>
+    <div class="post-comments-sec">
+      <div class="post-comments-head">✦ Replies & Notes ✦</div>
+      <div class="post-comments" id="${commentsId}">
+        <p style="font-family: var(--fh); font-size: 11px; color: var(--rule); letter-spacing: 1px; text-align: center; padding: 10px 0;">— No replies yet —</p>
+      </div>
+      <div class="post-comment-form" id="${commentFormId}">
+        <div class="form-field">
+          <label>Your name</label>
+          <input type="text" class="post-cname" placeholder="e.g. Curious Reader" autocomplete="off" />
+        </div>
+        <div class="form-field">
+          <label>Your reply</label>
+          <textarea class="post-cmsg" placeholder="Share your thoughts..."></textarea>
+        </div>
+        <button class="submit-btn" onclick="addPostComment('${pid}')">— Post Reply —</button>
+      </div>
+    </div>`;
 
   postStore[pid] = {
     id: post._id,
@@ -127,6 +146,7 @@ function createPostArticle(post) {
     bodyHTML: post.bodyHtml || '',
     tag: post.tag || '',
     imgSrc: post.imageUrl || null,
+    comments: post.comments || [],
   };
 
   refreshActions(pid, isPinned);
@@ -154,6 +174,11 @@ function applyRole() {
 
   document.querySelectorAll('article.post').forEach((article) => {
     refreshActions(article.id, article.dataset.expanded === 'true');
+  });
+
+  document.querySelectorAll('.post-comment, .post-comment-reply').forEach((comment) => {
+    const actions = comment.querySelector('.comment-actions');
+    if (actions) actions.style.display = isAdmin ? '' : 'none';
   });
 
   document.querySelectorAll('.comment').forEach((comment) => {
@@ -415,6 +440,83 @@ function setVotedReaction(pid, emojiIdx) {
   localStorage.setItem('votedReactions', JSON.stringify(voted));
 }
 
+function renderPostComments(posts) {
+  posts.forEach((post) => {
+    const pid = `post-${post._id}`;
+    const commentsContainer = document.getElementById(`pc-${pid}`);
+    if (!commentsContainer) return;
+    
+    const comments = post.comments || [];
+    commentsContainer.innerHTML = '';
+    
+    if (!comments.length) {
+      commentsContainer.innerHTML = '<p style="font-family: var(--fh); font-size: 11px; color: var(--rule); letter-spacing: 1px; text-align: center; padding: 10px 0;">— No replies yet —</p>';
+    } else {
+      comments.forEach((comment) => renderPostCommentElement(comment, pid));
+    }
+  });
+}
+
+function renderPostCommentElement(comment, pid) {
+  const commentsContainer = document.getElementById(`pc-${pid}`);
+  if (!commentsContainer) return;
+  
+  const div = document.createElement('div');
+  div.className = 'post-comment';
+  div.id = `postcomment-${comment._id}`;
+  div.setAttribute('data-id', comment._id);
+  
+  const name = comment.authorName || 'Anonymous';
+  const msg = comment.content || '';
+  const date = comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : '';
+  const deleteBtn = `<button class="comment-del-btn" onclick="openDeleteCommentModal('${comment._id}', '${pid}')">✕</button>`;
+  
+  let repliesHtml = '';
+  if (comment.replies && comment.replies.length > 0) {
+    repliesHtml = '<div class="post-comment-replies">';
+    comment.replies.forEach((reply) => {
+      const replyName = reply.authorName || 'Anonymous';
+      const replyMsg = reply.content || '';
+      const replyDate = reply.createdAt ? new Date(reply.createdAt).toLocaleDateString() : '';
+      const replyDeleteBtn = `<button class="comment-del-btn" onclick="openDeleteCommentModal('${reply._id}', '${pid}')">✕</button>`;
+      
+      repliesHtml += `<div class="post-comment-reply" id="postcomment-${reply._id}" data-id="${reply._id}">
+        <div class="cmeta">
+          <div style="flex:1"><span><strong>↳ ${sx(replyName)}</strong></span><span style="opacity:.6;margin-left:6px;">${sx(replyDate)}</span></div>
+          <div class="comment-actions" style="display:${isAdmin ? '' : 'none'}">${replyDeleteBtn}</div>
+        </div>
+        <div class="ctext">${sx(replyMsg)}</div>
+      </div>`;
+    });
+    repliesHtml += '</div>';
+  }
+  
+  div.innerHTML = `<div class="cmeta"><div style="flex:1"><span><strong>${sx(name)}</strong></span><span style="opacity:.6;margin-left:6px;">${sx(date)}</span></div><div class="comment-actions" style="display:${isAdmin ? '' : 'none'}">${deleteBtn}</div></div><div class="ctext">${sx(msg)}</div>${repliesHtml}<button class="reply-btn" onclick="toggleReplyForm(this, '${comment._id}', '${pid}')">↳ Reply</button>`;
+  
+  commentsContainer.appendChild(div);
+}
+
+function toggleReplyForm(btn, commentId, pid) {
+  let replyForm = btn.parentElement.querySelector('.post-reply-form');
+  if (!replyForm) {
+    const container = btn.parentElement;
+    replyForm = document.createElement('div');
+    replyForm.className = 'post-reply-form';
+    replyForm.innerHTML = `<div class="form-field">
+      <input type="text" class="reply-cname" placeholder="Your name..." autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <textarea class="reply-cmsg" placeholder="Your reply..."></textarea>
+    </div>
+    <button class="submit-btn" style="font-size: 11px; padding: 6px 10px;" onclick="addPostReply('${pid}', '${commentId}')">— Post Reply —</button>`;
+    container.insertBefore(replyForm, btn);
+    btn.textContent = '✕ Cancel';
+  } else {
+    replyForm.remove();
+    btn.textContent = '↳ Reply';
+  }
+}
+
 function renderComments(comments) {
   const container = document.getElementById('comments-container');
   if (!container) return;
@@ -448,6 +550,68 @@ function renderCommentElement(comment, idx) {
   container.appendChild(div);
 }
 
+async function addPostComment(pid) {
+  const nameInput = document.querySelector(`#cf-${pid} .post-cname`);
+  const msgInput = document.querySelector(`#cf-${pid} .post-cmsg`);
+  const name = nameInput.value.trim();
+  const msg = msgInput.value.trim();
+  const postId = postStore[pid]?.id;
+
+  if (!name || !msg || !postId) {
+    alert('Please fill in your name and message!');
+    return;
+  }
+
+  try {
+    await apiFetch('/api/comments', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        authorName: name, 
+        content: msg,
+        postId: postId,
+      }),
+    });
+    nameInput.value = '';
+    msgInput.value = '';
+    await loadContentFromSanity();
+  } catch (e) {
+    console.error('Failed to add comment:', e);
+    alert('Failed to save reply: ' + e.message);
+  }
+}
+
+async function addPostReply(pid, parentCommentId) {
+  const replyForm = document.querySelector(`#post-${postStore[pid].id}`).querySelector('.post-reply-form');
+  if (!replyForm) return;
+  
+  const nameInput = replyForm.querySelector('.reply-cname');
+  const msgInput = replyForm.querySelector('.reply-cmsg');
+  const name = nameInput.value.trim();
+  const msg = msgInput.value.trim();
+  const postId = postStore[pid]?.id;
+
+  if (!name || !msg || !postId) {
+    alert('Please fill in your name and message!');
+    return;
+  }
+
+  try {
+    await apiFetch('/api/comments', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        authorName: name, 
+        content: msg,
+        postId: postId,
+        parentCommentId: parentCommentId,
+      }),
+    });
+    await loadContentFromSanity();
+  } catch (e) {
+    console.error('Failed to add reply:', e);
+    alert('Failed to save reply: ' + e.message);
+  }
+}
+
 async function addComment() {
   const nameInput = document.getElementById('cname');
   const msgInput = document.getElementById('cmsg');
@@ -473,9 +637,9 @@ async function addComment() {
   }
 }
 
-function openDeleteCommentModal(idx) {
+function openDeleteCommentModal(commentId, pid) {
   if (!isAdmin) return;
-  pendingCommentDeleteId = idx;
+  pendingCommentDeleteId = commentId;
   openModal('del-comment-modal');
 }
 
@@ -483,8 +647,7 @@ async function doDeleteComment() {
   if (pendingCommentDeleteId === null || pendingCommentDeleteId === undefined) return;
 
   try {
-    const commentEl = document.getElementById('comment-' + pendingCommentDeleteId);
-    const id = commentEl ? commentEl.getAttribute('data-code') : null;
+    const id = pendingCommentDeleteId;
     if (id) {
       await apiFetch(`/api/comments/${encodeURIComponent(id)}`, {
         method: 'DELETE',

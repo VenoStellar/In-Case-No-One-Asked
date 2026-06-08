@@ -554,6 +554,74 @@
                 opacity: 0.7;
             }
 
+            /* ── POST COMMENTS ── */
+            .post-comments-sec {
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px dashed var(--rule);
+            }
+            .post-comments-head {
+                font-family: var(--fh);
+                font-size: 11px;
+                letter-spacing: 3px;
+                text-transform: uppercase;
+                border-bottom: 1px solid var(--rule);
+                padding-bottom: 6px;
+                margin-bottom: 12px;
+            }
+            .post-comments {
+                margin-bottom: 16px;
+                min-height: 40px;
+            }
+            .post-comment {
+                background: rgba(235, 227, 204, 0.7);
+                border: 1px solid rgba(196, 168, 122, 0.8);
+                padding: 10px 12px;
+                margin-bottom: 8px;
+                transform: rotate(var(--rot, 0deg));
+                position: relative;
+            }
+            .post-comment-replies {
+                margin: 8px 0;
+                padding-left: 12px;
+                border-left: 2px solid var(--rule);
+            }
+            .post-comment-reply {
+                background: rgba(245, 237, 217, 0.9);
+                border: 1px solid rgba(210, 190, 160, 0.6);
+                padding: 8px 10px;
+                margin-bottom: 6px;
+                font-size: 11px;
+            }
+            .post-comment-form {
+                background: rgba(240, 232, 210, 0.5);
+                border: 1px dashed var(--rule);
+                padding: 12px;
+                margin-bottom: 0;
+            }
+            .post-reply-form {
+                background: rgba(245, 240, 230, 0.8);
+                border: 1px dashed var(--smudge);
+                padding: 8px;
+                margin: 8px 0;
+            }
+            .reply-btn {
+                background: transparent;
+                border: 1px solid var(--rule);
+                color: var(--smudge);
+                font-family: var(--fh);
+                font-size: 10px;
+                padding: 4px 8px;
+                cursor: pointer;
+                letter-spacing: 1px;
+                transition: all 0.15s;
+                margin-top: 6px;
+            }
+            .reply-btn:hover {
+                background: var(--smudge);
+                color: var(--paper);
+            }
+
             /* ── FORMS ── */
             .form-field {
                 margin-bottom: 9px;

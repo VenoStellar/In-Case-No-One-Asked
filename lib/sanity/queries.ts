@@ -11,14 +11,37 @@ export const contentQuery = `{
     stampLabel,
     publishedAt,
     sortOrder,
-    legacyId
+    legacyId,
+    "comments": *[_type == "comment" && post._ref == ^._id && !defined(parentComment)] | order(createdAt asc) {
+      _id,
+      authorName,
+      content,
+      createdAt,
+      legacyId,
+      "replies": *[_type == "comment" && parentComment._ref == ^._id] | order(createdAt asc) {
+        _id,
+        authorName,
+        content,
+        createdAt,
+        legacyId
+      }
+    }
   },
-  "comments": *[_type == "comment"] | order(createdAt asc, _createdAt asc) {
+  "allComments": *[_type == "comment"] | order(createdAt asc, _createdAt asc) {
     _id,
+    "post": post->title,
     authorName,
     content,
     createdAt,
-    legacyId
+    legacyId,
+    "parentComment": parentComment->{_id, authorName},
+    "replies": *[_type == "comment" && parentComment._ref == ^._id] | order(createdAt asc) {
+      _id,
+      authorName,
+      content,
+      createdAt,
+      legacyId
+    }
   },
   "reactions": *[_type == "reaction"] {
     _id,

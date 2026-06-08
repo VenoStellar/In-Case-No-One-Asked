@@ -28,6 +28,18 @@ export const post = defineType({
     defineField({name: 'legacyId', title: 'Legacy Supabase/static ID', type: 'string'}),
     defineField({name: 'isPinned', title: 'Pinned', type: 'boolean', initialValue: false}),
     defineField({name: 'stampLabel', title: 'Stamp label', type: 'string'}),
+    defineField({
+      name: 'comments',
+      title: 'Comments',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'comment'}],
+        },
+      ],
+      description: 'Comments on this post (only top-level comments).',
+    }),
   ],
   preview: {
     select: {
