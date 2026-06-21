@@ -7,11 +7,15 @@ on:
 
 jobs:
   sync:
+    if: github.repository == 'Kamkmgamer/In-Case-No-One-Asked'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: main
 
       - name: Sync from upstream
         run: |
